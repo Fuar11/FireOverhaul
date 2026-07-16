@@ -19,7 +19,7 @@ namespace ImprovedFires.Component
 
         public List<FireFuelItem> fuelPool = new List<FireFuelItem>();
 
-        public float totalFireDuration;
+        public float totalExternalFireTemperature;
         public float totalFireTemperature;
 
         private float totalPower;
@@ -69,6 +69,8 @@ namespace ImprovedFires.Component
                 totalFireTemperature,
                 targetTemp,
                 gameDeltaTime * 0.1f);
+
+            totalExternalFireTemperature = CalculateExternalTemperature();
 
             state = SetState();
             //do more effects based on temp
