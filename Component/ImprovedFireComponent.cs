@@ -72,6 +72,7 @@ namespace ImprovedFires.Component
 
         public void AddFuelItem(FireFuelItem item)
         {
+            Main.Logger.Log($"Adding fuel item {item.name}", ComplexLogger.FlaggedLoggingLevel.Debug);
             fuelPool.Add(item);
         }
 

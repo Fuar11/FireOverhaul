@@ -99,6 +99,61 @@ namespace ImprovedFires.Patches
             }
         }
 
+        [HarmonyPatch(typeof(Fire), nameof(Fire.AddFuel))]
+
+        public class AddFuelToPool
+        {
+
+            public static bool Prefix => false;
+
+            public static void Postfix(Fire __instance, ref GearItem fuel)
+            {
+
+                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+
+                FireFuelItem fuelItem = Utilities.FuelItems.GetFuelItemInstance(fuel.name);
+                fuelItem.gearItemRef = fuel;
+
+                iFire.AddFuelItem(fuelItem);
+
+                if (fuelItem.type == FuelType.Wood || fuelItem.type == FuelType.Wood || fuelItem.type == FuelType.Synthetic)
+                {
+                    __instance.m_FX.TriggerFlareupLarge();
+                }
+            }
+
+
+
+        }
+
+        [HarmonyPatch(typeof(Fire), nameof(Fire.TurnOn))]
+
+        public class FireTurnOnOverride
+        {
+
+            public static bool Prefix => false;
+
+            public static void Postfix(Fire __instance, ref FuelSourceItem fuel)
+            {
+
+                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+
+                GearItem fi = fuel.gameObject.GetComponent<GearItem>();
+                if (fi == null)
+                {
+                    Main.Logger.Log("Fuel source item is null!", ComplexLogger.FlaggedLoggingLevel.Error);
+                    return;
+                }
+                FireFuelItem fuelItem = Utilities.FuelItems.GetFuelItemInstance(fi.name);
+                fuelItem.gearItemRef = fi;
+                fuelItem.state = FireFuelItemState.Burning;
+
+                iFire.AddFuelItem(fuelItem);
+
+            }
+
+        }
+
         [HarmonyPatch(typeof(Fire), nameof(Fire.TurnOff))]
 
         public class FireTurnOffOverride

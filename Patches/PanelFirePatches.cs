@@ -15,7 +15,7 @@ namespace ImprovedFires.Patches
             public static void Postfix(ref bool __result, ref GearItem gi)
             {
                 if (GameManager.GetSkillFireStarting().GetCurrentTierNumber() > 4) return;
-                if (gi.name.ToLowerInvariant().Contains("hardwood") || gi.name.ToLowerInvariant().Contains("softwood") || gi.name.ToLowerInvariant().Contains("firelog")) __result = false;
+                if (gi.name.ToLowerInvariant().Contains("hardwood") || gi.name.ToLowerInvariant().Contains("softwood") || gi.name.ToLowerInvariant().Contains("firelog") || gi.name.ToLowerInvariant().Contains("reclaimed")) __result = false;
             }
         }
 

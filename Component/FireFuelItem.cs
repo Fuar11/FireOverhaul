@@ -51,6 +51,8 @@ namespace ImprovedFires.Component
             this.coalsThreshold = coalsThreshold;
             this.embersAmount = embersThreshold;
             this.charcoalYield = charcoalYield;
+
+            remainingEnergy = energyContent;
         }
 
     
@@ -64,6 +66,7 @@ namespace ImprovedFires.Component
                 ignitionProgress = 0f;
                 if (fire.totalFireTemperature >= ignitionTemp)
                 {
+                    Main.Logger.Log($"Fire temp is hot enough to ignite fuel {name}", ComplexLogger.FlaggedLoggingLevel.Debug);
                     state = FireFuelItemState.Heating;
                 }
             }
@@ -79,6 +82,7 @@ namespace ImprovedFires.Component
                 ignitionProgress += gameDeltaTime / ignitionDuration;
                 if (ignitionProgress >= 1f)
                 {
+                    burnAmount += 0.01f; //a little push
                     state = FireFuelItemState.Burning;
                 }
             }
@@ -127,7 +131,7 @@ namespace ImprovedFires.Component
                 case FuelType.Wood:
                     return 4f * burnAmount * (1f - burnAmount);
                 case FuelType.Stick:
-                    return Mathf.Pow(1f - burnAmount, 0.5f);
+                    return CalculateStickCombustion();
                 case FuelType.Coal:
                     return Mathf.Clamp01(
                        Mathf.Sin(burnAmount * Mathf.PI * 0.8f)
@@ -155,6 +159,16 @@ namespace ImprovedFires.Component
             return Mathf.Lerp(1f, 0.2f, (burnAmount - 0.8f) / 0.2f);
         }
 
+        private float CalculateStickCombustion()
+        {
+            if (burnAmount < 0.1f)
+                return burnAmount / 0.1f;
+
+            if (burnAmount < 0.8f)
+                return 1f;
+
+            return 1f - ((burnAmount - 0.8f) / 0.2f);
+        }
 
         private float CalculateSlowDecayCurve()
         {
@@ -179,8 +193,6 @@ namespace ImprovedFires.Component
        2f
    );
         }
-
-
         public float GetCharcoalProduced()
         {
 
