@@ -23,9 +23,12 @@ namespace ImprovedFires.Component
         public float totalFireTemperature;
 
         private float totalPower;
+        public float burnRateMult;
 
-        public float BasePower = 4400f;       // watts
-        public float BaseTemperature = 700f;  // degrees
+
+        public const float BASELINE_POWER = 4500f; // watts
+        public const float BASELINE_INTERNAL_TEMP = 700f;  // degrees
+        public const float BASELINE_EXTERNAL_TEMP = 30f;  // degrees
 
         private bool extinguished = false;
 
@@ -51,6 +54,7 @@ namespace ImprovedFires.Component
             }
 
             totalPower = 0;
+            burnRateMult = Mathf.Clamp(totalFireTemperature / BASELINE_INTERNAL_TEMP, 0.25f, 3f); //these values may need adjusting
 
             foreach (FireFuelItem fuel in fuelPool)
             {
@@ -59,7 +63,7 @@ namespace ImprovedFires.Component
                 totalPower += fuel.currentPowerOutput;
             }
 
-            float targetTemp = CalculateTemperature(totalPower);
+            float targetTemp = CalculateTemperature();
 
             totalFireTemperature = Mathf.Lerp( //this may need some changing as well
                 totalFireTemperature,
@@ -92,16 +96,23 @@ namespace ImprovedFires.Component
 
         }
 
-        private float CalculateTemperature(float power)
+        private float CalculateTemperature()
         {
-            if (power <= 0)
+            if (totalPower <= 0)
                 return 20f; // ambient, maybe modify this by the air temp
 
-            float ratio = power / BasePower;
+            float ratio = totalPower / BASELINE_POWER;
 
-            float temp = BaseTemperature * Mathf.Pow(ratio, 0.35f);
+            float temp = BASELINE_INTERNAL_TEMP * Mathf.Pow(ratio, 0.35f);
 
             return Mathf.Clamp(temp, 20f, 1200f);
+        }
+
+        public float CalculateExternalTemperature()
+        {
+                   return
+            (totalPower / BASELINE_POWER)
+            * BASELINE_EXTERNAL_TEMP;
         }
 
         private FireState SetState()

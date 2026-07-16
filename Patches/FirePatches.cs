@@ -150,6 +150,18 @@ namespace ImprovedFires.Patches
 
                 iFire.AddFuelItem(fuelItem);
 
+                float externalTemp = iFire.CalculateExternalTemperature();
+
+                __instance.m_HeatSource.TurnOn();
+                __instance.m_HeatSource.m_MaxTempIncrease = externalTemp;
+                __instance.m_FuelHeatIncrease = externalTemp;
+                __instance.m_HeatSource.m_MaxTempIncreaseInnerRadius = fuel.m_HeatInnerRadius; //i might change these things later
+                __instance.m_HeatSource.m_MaxTempIncreaseOuterRadius = fuel.m_HeatOuterRadius * __instance.GetFireOuterRadiusScale();
+
+         
+
+                __instance.m_FX.TriggerStage(Il2Cpp.FireState.Starting_TinderSmallFlame, true, true);
+
             }
 
         }

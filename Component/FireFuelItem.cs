@@ -43,7 +43,7 @@ namespace ImprovedFires.Component
         {
             this.name = name;
             this.type = type;
-            this.baseBurnDuration = baseDuration;
+            this.baseBurnDuration = baseDuration; //this isn't really used right now, duration is determined by current remaining energy/burn amount, which is determined by the combustion curve, as well as current burn rate
             this.timeToIgniteAtTemp = timeToIgniteAtTemp;
             this.ignitionTemp = ignitionTemp;
             this.maxPowerOutput = maxPowerOutput;
@@ -115,9 +115,8 @@ namespace ImprovedFires.Component
                 }
             }
 
-            float burnRateMult = Mathf.Clamp(fire.totalFireTemperature / fire.BaseTemperature, 0.25f, 3f); //these values may need adjusting
 
-            remainingEnergy -= currentPowerOutput * burnRateMult * gameDeltaTime; //this may need adjustment, not sure yet, deltaTime always confuses me
+            remainingEnergy -= currentPowerOutput * fire.burnRateMult * gameDeltaTime; //this may need adjustment, not sure yet, deltaTime always confuses me
 
             burnAmount = 1f - (remainingEnergy / energyContent);
 
