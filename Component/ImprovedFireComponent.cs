@@ -24,8 +24,8 @@ namespace ImprovedFires.Component
 
         private float totalPower;
 
-        private float BasePower = 4400f;       // watts
-        private float BaseTemperature = 700f;  // degrees
+        public float BasePower = 4400f;       // watts
+        public float BaseTemperature = 700f;  // degrees
 
         private bool extinguished = false;
 
@@ -42,6 +42,8 @@ namespace ImprovedFires.Component
 
         public void Update() 
         {
+
+            float gameDeltaTime = GameManager.GetTimeOfDayComponent().GetTODSeconds(Time.deltaTime);
 
             if (GameManager.m_IsPaused || GameManager.s_IsGameplaySuspended)
             {
@@ -62,7 +64,7 @@ namespace ImprovedFires.Component
             totalFireTemperature = Mathf.Lerp( //this may need some changing as well
                 totalFireTemperature,
                 targetTemp,
-                Time.deltaTime * 0.1f);
+                gameDeltaTime * 0.1f);
 
             state = SetState();
             //do more effects based on temp

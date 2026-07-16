@@ -52,7 +52,7 @@ namespace ImprovedFires.Patches
                 }
                 if (__instance.m_FireState == Il2Cpp.FireState.Off) //completely dead
                 {
-                    __instance.m_TimeOffSeconds += Time.deltaTime;
+                    __instance.m_TimeOffSeconds += Time.deltaTime; //real world seconds
                     if (__instance.m_TimeOffSeconds > 2f)
                     {
                         Il2Cpp.Utils.SetActive(__instance.m_FX.lighting.gameObject, false);
@@ -65,7 +65,19 @@ namespace ImprovedFires.Patches
                 //__instance.MaybeBlowOutFromWind(); this needs a patch
                 __instance.UpdateFireAudio();
 
-                if(iFire.state == Enums.FireState.Coals)
+                if (iFire.state == Enums.FireState.Raging)
+                {
+                    __instance.m_FX.TriggerStage(Il2Cpp.FireState.FullBurn, true); //need something else here
+                }
+                if (iFire.state == Enums.FireState.Steady)
+                {
+                    __instance.m_FX.TriggerStage(Il2Cpp.FireState.FullBurn, true); 
+                }
+                if (iFire.state == Enums.FireState.Dwindling)
+                {
+                    __instance.m_FX.TriggerStage(Il2Cpp.FireState.Blownout, true);
+                }
+                if (iFire.state == Enums.FireState.Coals)
                 {
                     __instance.m_FX.TriggerStage(Il2Cpp.FireState.Starting_TinderSmolder, true); //vanilla embers stage used to depict coals
                 }

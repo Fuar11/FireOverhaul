@@ -57,6 +57,8 @@ namespace ImprovedFires.Component
         public void UpdateStats(ImprovedFireComponent fire, bool extinguish)
         {
 
+            float gameDeltaTime = GameManager.GetTimeOfDayComponent().GetTODSeconds(Time.deltaTime);
+
             if (state == FireFuelItemState.Cold)
             {
                 ignitionProgress = 0f;
@@ -74,7 +76,7 @@ namespace ImprovedFires.Component
                 float heatingRatio = Mathf.Clamp(fire.totalFireTemperature / ignitionTemp, 1f, 3f);
                 float ignitionDuration = timeToIgniteAtTemp / heatingRatio;
 
-                ignitionProgress += Time.deltaTime / ignitionDuration;
+                ignitionProgress += gameDeltaTime / ignitionDuration;
                 if (ignitionProgress >= 1f)
                 {
                     state = FireFuelItemState.Burning;
@@ -108,8 +110,10 @@ namespace ImprovedFires.Component
                     state = FireFuelItemState.Ash;
                 }
             }
-            
-            remainingEnergy -= currentPowerOutput * Time.deltaTime; //this may need adjustment, not sure yet, this always confuses me
+
+            float burnRateMult = Mathf.Clamp(fire.totalFireTemperature / fire.BaseTemperature, 0.25f, 3f); //these values may need adjusting
+
+            remainingEnergy -= currentPowerOutput * burnRateMult * gameDeltaTime; //this may need adjustment, not sure yet, deltaTime always confuses me
 
             burnAmount = 1f - (remainingEnergy / energyContent);
 
