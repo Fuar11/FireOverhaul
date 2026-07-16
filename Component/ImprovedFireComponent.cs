@@ -11,6 +11,7 @@ using FireState = ImprovedFires.Enums.FireState;
 
 namespace ImprovedFires.Component
 {
+    [RegisterTypeInIl2Cpp]
     public class ImprovedFireComponent : MonoBehaviour
     {
 
@@ -41,6 +42,12 @@ namespace ImprovedFires.Component
 
         public void Update() 
         {
+
+            if (GameManager.m_IsPaused || GameManager.s_IsGameplaySuspended)
+            {
+                return;
+            }
+
             totalPower = 0;
 
             foreach (FireFuelItem fuel in fuelPool)
@@ -105,12 +112,14 @@ namespace ImprovedFires.Component
             burningCount = fuelPool.Count(f => f.state == Enums.FireFuelItemState.Burning);
             coalCount = fuelPool.Count(f => f.state == Enums.FireFuelItemState.Coals);
             emberCount = fuelPool.Count(f => f.state == Enums.FireFuelItemState.Embers);
-            
+            bool allAsh = fuelPool.All(f => f.state == Enums.FireFuelItemState.Ash); //energy remaining is almost 0
+
             if (burningCount == 0 && coalCount == 0 && emberCount > 0) return FireState.Embers;
             if (burningCount == 0 && coalCount == 0) return FireState.Coals;
             if (burningCount > 0 && totalCombustion < 0.5) return FireState.Dwindling;
             if (burningCount > 0 && totalCombustion < 1.5) return FireState.Steady;
             if (burningCount > 0 && totalCombustion > 1.5) return FireState.Raging;
+            if (allAsh) return FireState.None;
             else return FireState.None;
 
         }

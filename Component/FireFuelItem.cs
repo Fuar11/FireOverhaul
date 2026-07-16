@@ -94,6 +94,13 @@ namespace ImprovedFires.Component
             }
             else if(state == FireFuelItemState.Embers)
             {
+
+                if (extinguish)
+                {
+                    ReduceToAsh();
+                    return;
+                }
+
                 currentPowerOutput = emberPowerOutput * CalculateEmberCurve();
 
                 if(remainingEnergy <= energyContent * 0.01f)
@@ -195,6 +202,13 @@ namespace ImprovedFires.Component
             }
 
             return 0f;
+        }
+
+        public void ReduceToAsh()
+        {
+            Main.Logger.Log("Reducing energy of fuel to 0.", ComplexLogger.FlaggedLoggingLevel.Debug);
+            remainingEnergy = 0f;
+            state = FireFuelItemState.Ash;
         }
 
     }

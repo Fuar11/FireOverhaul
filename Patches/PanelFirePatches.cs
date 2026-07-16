@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ImprovedFires.Patches.UIPatches
+namespace ImprovedFires.Patches
 {
     internal class PanelFirePatches
     {

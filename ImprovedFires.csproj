@@ -20,8 +20,7 @@
 
 	<!-- List of used references -->
 	<ItemGroup>
-		<!-- This is the base reference. MUST EXIST -->
-		<PackageReference Include="Waltz.Modding.TLD.Il2CppAssemblies.Windows" Version="2.52.0" />		<!-- Only if you need ModData  -->
+		<PackageReference Include="Waltz.Modding.TLD.Il2CppAssemblies.Windows" Version="2.52.0" />	
 		
 	</ItemGroup>
 
@@ -34,6 +33,9 @@
 		</Reference>
 		<Reference Include="ModData">
 			<HintPath>$(TheLongDarkPath)/Mods/ModData.dll</HintPath>
+		</Reference>
+		<Reference Include="ComplexLogger">
+			<HintPath>$(TheLongDarkPath)/Mods/ComplexLogger.dll</HintPath>
 		</Reference>
 	</ItemGroup>
 	
@@ -57,9 +59,6 @@
 		<Using Include="GearSpawner" />
 		<!-- Only if your using ModData -->
 		<Using Include="ModData" />
-	</ItemGroup>
-	<ItemGroup>
-	  <Folder Include="Patches\ItemPatches\" />
 	</ItemGroup>
 
 	<!-- This is a build event. It will copy your dll to the currently defined TheLongDarkPath's Mods folder -->
