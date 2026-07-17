@@ -10,10 +10,11 @@ namespace ImprovedFires.Enums
     {
 
         None = 0, //fire is completely out
-        Embers = 1, //no fuel, cold
-        Coals = 2, //no fuel, hot glowing coals
-        Dwindling = 3, //some fuel, fire is barely going
-        Steady = 4, //fueled, fire is going steady
-        Raging = 5, //lots of fuel, fire is burning extremely hot
+        Starting = 1, //fire is being started from nothing
+        Embers = 2, //no fuel, cold
+        Coals = 3, //no fuel, hot glowing coals
+        Dwindling = 4, //some fuel, fire is barely going
+        Steady = 5, //fueled, fire is going steady
+        Raging = 6, //lots of fuel, fire is burning extremely hot
     }
 }

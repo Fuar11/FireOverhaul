@@ -23,7 +23,10 @@ namespace ImprovedFires.Patches
                 {
                     Main.Logger.Log("Adding fire component to fire object, wahoo!", ComplexLogger.FlaggedLoggingLevel.Debug);
                     __instance.gameObject.AddComponent<ImprovedFireComponent>();
-                }                
+                }
+
+                GameManager.GetFireManagerComponent().m_MaxDurationHoursOfFire = float.PositiveInfinity;
+
 
             }
 
@@ -65,6 +68,11 @@ namespace ImprovedFires.Patches
                 //__instance.MaybeBlowOutFromWind(); this needs a patch
                 __instance.UpdateFireAudio();
 
+                if(iFire.state > 0 && __instance.GetFireState() == Il2Cpp.FireState.Off)
+                {
+                    
+                }
+
                 if (iFire.state == Enums.FireState.Raging)
                 {
                     __instance.m_FX.TriggerStage(Il2Cpp.FireState.FullBurn, true); //need something else here
@@ -81,14 +89,13 @@ namespace ImprovedFires.Patches
                 {
                     __instance.m_FX.TriggerStage(Il2Cpp.FireState.Starting_TinderSmolder, true); //vanilla embers stage used to depict coals
                 }
-
-                if(iFire.state != Enums.FireState.Embers)
+                if(iFire.state == Enums.FireState.Embers)
                 {
                     __instance.m_FX.TriggerStage(Il2Cpp.FireState.Starting_FireStarterUse, true); //vanilla starter use stage used to depict embers EXPERIMENTAL
                 }
-
                 if (iFire.state == Enums.FireState.None)
                 {
+                    Main.Logger.Log("Fire is out!", ComplexLogger.FlaggedLoggingLevel.Debug);
                     __instance.TurnOff();
                     if (__instance.m_Campfire)
                     {
@@ -131,6 +138,21 @@ namespace ImprovedFires.Patches
 
         }
 
+       [HarmonyPatch(typeof(Fire), nameof(Fire.PlayerBeginCreate))]
+
+        public class SetFireStarting
+        {
+
+            public static void Postfix(Fire __instance)
+            {
+                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+
+                Main.Logger.Log("Fire is starting!", ComplexLogger.FlaggedLoggingLevel.Debug);
+                iFire.state = Enums.FireState.Starting;
+            }
+
+        }
+
         [HarmonyPatch(typeof(Fire), nameof(Fire.ExitFireStarting))]
 
         public class FireStartOverride //this ensures that the fuel item is added ONLY when the fire start is successful
@@ -138,10 +160,10 @@ namespace ImprovedFires.Patches
 
             public static void Postfix(Fire __instance, ref bool success)
             {
+                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+
                 if (success)
                 {
-                    ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
-
                     GearItem fi = __instance.m_FuelUsedToStart.gameObject.GetComponent<GearItem>();
                     if (fi == null)
                     {
@@ -156,6 +178,11 @@ namespace ImprovedFires.Patches
                     //add tinder here too
 
                     iFire.AddFuelItem(fuelItem);
+                }
+                else
+                {
+                    Main.Logger.Log("Failed to start fire, setting state back to none.", ComplexLogger.FlaggedLoggingLevel.Debug);
+                    iFire.state = Enums.FireState.None;
                 }
             }
 
@@ -182,7 +209,7 @@ namespace ImprovedFires.Patches
 
                 __instance.m_ElapsedOnTODSeconds = 0f;
                 __instance.m_ElapsedOnTODSecondsUnmodified = 0f;
-                __instance.m_MaxOnTODSeconds = float.PositiveInfinity; //idk if this'll cause issues
+                //__instance.m_MaxOnTODSeconds = iFire.GetEstimatedFireDuration(); not needed since this is a one time set
 
             }
 
@@ -227,6 +254,27 @@ namespace ImprovedFires.Patches
 
                 __result = iFire.CanTakeTorch();
             }
+        }
+
+        [HarmonyPatch(typeof(Fire), nameof(Fire.GetRemainingLifeTimeSeconds))]
+
+        public class GetEstimatedDurationSeconds
+        {
+            public static void Postfix(Fire __instance, ref float __result)
+            {
+                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+
+                if (__instance.m_FireStartingState == FireStartingState.Off && __instance.m_FireState != Il2Cpp.FireState.Off)
+                {
+                    __result = iFire.GetEstimatedFireDuration();
+                    return;
+                }
+                else
+                {
+                    __result = 0f;
+                }
+            }
+
         }
     }
 }

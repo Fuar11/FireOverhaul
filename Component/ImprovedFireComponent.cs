@@ -19,6 +19,8 @@ namespace ImprovedFires.Component
 
         public List<FireFuelItem> fuelPool = new List<FireFuelItem>();
 
+        private float d_estimatedFireDurationSeconds;
+
         public float totalExternalFireTemperature;
         public float totalFireTemperature;
 
@@ -78,6 +80,9 @@ namespace ImprovedFires.Component
          
             state = SetState();
             //do more effects based on temp
+
+            d_estimatedFireDurationSeconds = GetEstimatedFireDuration();
+
         }
 
         public void AddFuelItem(FireFuelItem item)
@@ -135,6 +140,31 @@ namespace ImprovedFires.Component
             outerRadius = Mathf.Clamp(4f * heatScale, 2f, 8f);
         }
 
+
+        public float GetEstimatedFireDuration()
+        {
+            float longestDuration = 0f;
+
+            foreach (var fuel in fuelPool)
+            {
+                float duration = fuel.CalculateEstimatedRemainingDurationInSeconds(this);
+
+                if (duration > longestDuration)
+                    longestDuration = duration;
+            }
+
+            return longestDuration;
+        }
+
+        public void BlowOnFire()
+        {
+            if (totalFireTemperature <= 200f) //these are testing values
+            {
+                totalFireTemperature *= 4f;
+            }
+            else totalFireTemperature /= 20f;
+        }
+
         public bool CanTakeTorch()
         {
             foreach (FireFuelItem fuel in fuelPool)
@@ -162,9 +192,8 @@ namespace ImprovedFires.Component
             }
         }
 
-        private FireState SetState()
+        private FireState SetState() //really shitty state manager
         {
-
             totalCombustion =
                 fuelPool
                 .Where(x => x.state == Enums.FireFuelItemState.Burning)
@@ -173,16 +202,24 @@ namespace ImprovedFires.Component
             burningCount = fuelPool.Count(f => f.state == Enums.FireFuelItemState.Burning);
             coalCount = fuelPool.Count(f => f.state == Enums.FireFuelItemState.Coals);
             emberCount = fuelPool.Count(f => f.state == Enums.FireFuelItemState.Embers);
-            bool allAsh = fuelPool.All(f => f.state == Enums.FireFuelItemState.Ash); //energy remaining is almost 0
+            //bool allAsh = fuelPool.Count(f => f.state == Enums.FireFuelItemState.Ash) == fuelPool.Count; //energy remaining is almost 0
 
-            if (burningCount == 0 && coalCount == 0 && emberCount > 0) return FireState.Embers;
-            if (burningCount == 0 && coalCount > 0) return FireState.Coals;
-            if (burningCount > 0 && totalCombustion < 0.5) return FireState.Dwindling;
-            if (burningCount > 0 && totalCombustion < 1.5) return FireState.Steady;
-            if (burningCount > 0 && totalCombustion > 1.5) return FireState.Raging;
-            if (allAsh) return FireState.None;
-            else return FireState.None;
-
+            if (state == FireState.Starting && burningCount == 0 && coalCount == 0 && emberCount == 0) return FireState.Starting; //fire is starting and no fuel is burning yet
+            else if (burningCount == 0 && coalCount == 0 && emberCount > 0) return FireState.Embers;
+            else if (burningCount == 0 && coalCount > 0) return FireState.Coals;
+            else if (burningCount > 0 && totalCombustion < 0.5) return FireState.Dwindling;
+            else if (burningCount > 0 && totalCombustion < 1.5) return FireState.Steady;
+            else if (burningCount > 0 && totalCombustion > 1.5) return FireState.Raging;
+            else if (state != FireState.None && burningCount == 0 && coalCount == 0 && emberCount == 0) //fire has no energy releasing fuel left
+            {
+                Main.Logger.Log("All fuel is ash. Setting fire state to none!", ComplexLogger.FlaggedLoggingLevel.Debug);
+                return FireState.None;
+            }
+            else
+            {
+                Main.Logger.Log("Setting fire state to none!", ComplexLogger.FlaggedLoggingLevel.Debug);
+                return FireState.None;
+            }
         }
 
     }

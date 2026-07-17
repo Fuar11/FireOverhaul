@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static ComplexLogger.Utilities.ConversionUtilities;
 
 namespace ImprovedFires.Component
 {
@@ -53,6 +54,41 @@ namespace ImprovedFires.Component
             this.charcoalYield = charcoalYield;
 
             remainingEnergy = energyContent;
+
+            float coalsPowerFactor = 0f;
+            float emberPowerFactor = 0f;
+
+            if(type == FuelType.Wood)
+            {
+                coalsPowerFactor = 0.4f;
+                emberPowerFactor = 0.095f;
+            }
+            else if (type == FuelType.Stick)
+            {
+                coalsPowerFactor = 0.07f;
+                emberPowerFactor = 0.02f;
+            }
+            else if(type == FuelType.Coal)
+            {
+                coalsPowerFactor = 0.85f;
+                emberPowerFactor = 0.3f;
+            }
+            else if (type == FuelType.Paper)
+            {
+                coalsPowerFactor = 0.02f;
+                emberPowerFactor = 0.001f;
+            }
+            else if (type == FuelType.Synthetic)
+            {
+                coalsPowerFactor = 0.45f;
+                emberPowerFactor = 0.095f;
+            }
+
+            coalsPowerOutput = maxPowerOutput * coalsPowerFactor;
+            emberPowerOutput = maxPowerOutput * emberPowerFactor;
+
+            state = FireFuelItemState.Cold;
+
         }
 
     
@@ -70,13 +106,18 @@ namespace ImprovedFires.Component
                     state = FireFuelItemState.Heating;
                 }
             }
-
-            if (state == FireFuelItemState.Heating)
+            else if (state == FireFuelItemState.Heating)
             {
 
                 if (fire.totalFireTemperature < ignitionTemp || extinguish) state = FireFuelItemState.Cold;
 
-                float heatingRatio = Mathf.Clamp(fire.totalFireTemperature / ignitionTemp, 1f, 3f);
+                float excessTemp = fire.totalFireTemperature - ignitionTemp;
+
+                float heatingRatio = Mathf.Clamp(
+                    1f + excessTemp / 500f,
+                    1f,
+                    2f
+                );
                 float ignitionDuration = timeToIgniteAtTemp / heatingRatio;
 
                 ignitionProgress += gameDeltaTime / ignitionDuration;
@@ -86,17 +127,16 @@ namespace ImprovedFires.Component
                     state = FireFuelItemState.Burning;
                 }
             }
-
-            if (state == FireFuelItemState.Burning)
+            else if (state == FireFuelItemState.Burning)
             {
                 currentPowerOutput = maxPowerOutput * CalculateCombustionCurve();
-                Main.Logger.Log($"Fuel {name} power output is {currentPowerOutput}", ComplexLogger.FlaggedLoggingLevel.Debug);
 
                 if (burnAmount >= coalsThreshold) state = FireFuelItemState.Coals;
             }
             else if(state == FireFuelItemState.Coals)
             {
                 currentPowerOutput = coalsPowerOutput * CalculateSlowDecayCurve();
+
                 if (burnAmount >= emberThreshold) state = FireFuelItemState.Embers;
             }
             else if(state == FireFuelItemState.Embers)
@@ -109,8 +149,9 @@ namespace ImprovedFires.Component
                 }
 
                 currentPowerOutput = emberPowerOutput * CalculateEmberCurve();
+                Main.Logger.Log($"Fuel {name} embers power output is {currentPowerOutput}", ComplexLogger.FlaggedLoggingLevel.Debug);
 
-                if(remainingEnergy <= energyContent * 0.01f)
+                if (remainingEnergy <= energyContent * 0.01f)
                 {
                     state = FireFuelItemState.Ash;
                 }
@@ -172,10 +213,9 @@ namespace ImprovedFires.Component
 
         private float CalculateSlowDecayCurve()
         {
-
             coalsAmount = Mathf.InverseLerp(coalsThreshold, emberThreshold, burnAmount);
 
-            return 1f - Mathf.Pow(coalsAmount, 2.5f);
+            return 1f - Mathf.Pow(coalsAmount, 2f);
         }
 
         private float CalculateEmberCurve()
@@ -183,10 +223,10 @@ namespace ImprovedFires.Component
 
             embersAmount = Mathf.InverseLerp(emberThreshold, 1f, burnAmount);
 
-            return Mathf.Pow(
-       1f - embersAmount,
-       2f
-   );
+                        return Mathf.Pow(
+                   1f - embersAmount,
+                   2f
+               );
         }
         public float GetCharcoalProduced()
         {
@@ -209,6 +249,27 @@ namespace ImprovedFires.Component
                     return 0.80f;
 
                 case FireFuelItemState.Ash:
+                    return 0f;
+            }
+
+            return 0f;
+        }
+
+        public float CalculateEstimatedRemainingDurationInSeconds(ImprovedFireComponent fire)
+        {
+
+            switch (state)
+            {
+                case FireFuelItemState.Burning:
+                case FireFuelItemState.Coals:
+
+                    return remainingEnergy / (currentPowerOutput * fire.burnRateMult);
+
+                case FireFuelItemState.Embers:
+                case FireFuelItemState.Ash:
+                case FireFuelItemState.Heating:
+                case FireFuelItemState.Cold:
+                case FireFuelItemState.None:
                     return 0f;
             }
 
