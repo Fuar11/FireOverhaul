@@ -176,7 +176,7 @@ namespace ImprovedFires.Component
             bool allAsh = fuelPool.All(f => f.state == Enums.FireFuelItemState.Ash); //energy remaining is almost 0
 
             if (burningCount == 0 && coalCount == 0 && emberCount > 0) return FireState.Embers;
-            if (burningCount == 0 && coalCount == 0) return FireState.Coals;
+            if (burningCount == 0 && coalCount > 0) return FireState.Coals;
             if (burningCount > 0 && totalCombustion < 0.5) return FireState.Dwindling;
             if (burningCount > 0 && totalCombustion < 1.5) return FireState.Steady;
             if (burningCount > 0 && totalCombustion > 1.5) return FireState.Raging;

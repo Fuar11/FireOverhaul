@@ -131,6 +131,36 @@ namespace ImprovedFires.Patches
 
         }
 
+        [HarmonyPatch(typeof(Fire), nameof(Fire.ExitFireStarting))]
+
+        public class FireStartOverride //this ensures that the fuel item is added ONLY when the fire start is successful
+        {
+
+            public static void Postfix(Fire __instance, ref bool success)
+            {
+                if (success)
+                {
+                    ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+
+                    GearItem fi = __instance.m_FuelUsedToStart.gameObject.GetComponent<GearItem>();
+                    if (fi == null)
+                    {
+                        Main.Logger.Log("Fuel source item is null!", ComplexLogger.FlaggedLoggingLevel.Error);
+                        return;
+                    }
+                    FireFuelItem fuelItem = Utilities.FuelItems.GetFuelItemInstance(fi.name);
+                    fuelItem.gearItemRef = fi;
+                    fuelItem.burnAmount += 0.01f; //a little push
+                    fuelItem.state = FireFuelItemState.Burning;
+
+                    //add tinder here too
+
+                    iFire.AddFuelItem(fuelItem);
+                }
+            }
+
+        }
+
         [HarmonyPatch(typeof(Fire), nameof(Fire.TurnOn))]
 
         public class FireTurnOnOverride
@@ -142,19 +172,6 @@ namespace ImprovedFires.Patches
             {
 
                 ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
-
-                GearItem fi = fuel.gameObject.GetComponent<GearItem>();
-                if (fi == null)
-                {
-                    Main.Logger.Log("Fuel source item is null!", ComplexLogger.FlaggedLoggingLevel.Error);
-                    return;
-                }
-                FireFuelItem fuelItem = Utilities.FuelItems.GetFuelItemInstance(fi.name);
-                fuelItem.gearItemRef = fi;
-                fuelItem.state = FireFuelItemState.Burning;
-
-                iFire.AddFuelItem(fuelItem);
-
                 __instance.m_HeatSource.TurnOn();
                 __instance.m_HeatSource.m_MaxTempIncrease = iFire.totalExternalFireTemperature;
                 __instance.m_FuelHeatIncrease = iFire.totalExternalFireTemperature;
@@ -162,6 +179,10 @@ namespace ImprovedFires.Patches
                 __instance.m_HeatSource.m_MaxTempIncreaseOuterRadius = iFire.outerRadius * __instance.GetFireOuterRadiusScale(); //maybe remove this
 
                 __instance.m_FX.TriggerStage(Il2Cpp.FireState.Starting_TinderSmallFlame, true, true);
+
+                __instance.m_ElapsedOnTODSeconds = 0f;
+                __instance.m_ElapsedOnTODSecondsUnmodified = 0f;
+                __instance.m_MaxOnTODSeconds = float.PositiveInfinity; //idk if this'll cause issues
 
             }
 

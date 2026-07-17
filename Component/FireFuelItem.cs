@@ -49,7 +49,7 @@ namespace ImprovedFires.Component
             this.maxPowerOutput = maxPowerOutput;
             this.energyContent = energyContent;
             this.coalsThreshold = coalsThreshold;
-            this.embersAmount = embersThreshold;
+            this.emberThreshold = embersThreshold;
             this.charcoalYield = charcoalYield;
 
             remainingEnergy = energyContent;
@@ -90,13 +90,14 @@ namespace ImprovedFires.Component
             if (state == FireFuelItemState.Burning)
             {
                 currentPowerOutput = maxPowerOutput * CalculateCombustionCurve();
+                Main.Logger.Log($"Fuel {name} power output is {currentPowerOutput}", ComplexLogger.FlaggedLoggingLevel.Debug);
 
-                if (burnAmount <= coalsThreshold) state = FireFuelItemState.Coals;
+                if (burnAmount >= coalsThreshold) state = FireFuelItemState.Coals;
             }
             else if(state == FireFuelItemState.Coals)
             {
                 currentPowerOutput = coalsPowerOutput * CalculateSlowDecayCurve();
-                if (burnAmount <= coalsThreshold) state = FireFuelItemState.Embers;
+                if (burnAmount >= emberThreshold) state = FireFuelItemState.Embers;
             }
             else if(state == FireFuelItemState.Embers)
             {
@@ -174,12 +175,7 @@ namespace ImprovedFires.Component
 
             coalsAmount = Mathf.InverseLerp(coalsThreshold, emberThreshold, burnAmount);
 
-            return Mathf.Lerp(
-       1f,
-       0f,
-       Mathf.Pow(coalsAmount, 0.7f)
-   );
-
+            return 1f - Mathf.Pow(coalsAmount, 2.5f);
         }
 
         private float CalculateEmberCurve()

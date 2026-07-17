@@ -9,11 +9,13 @@ namespace ImprovedFires.Patches
 {
     internal class UIPatches
     {
-
+        /**
         [HarmonyPatch(typeof(FireplaceInteraction), nameof(FireplaceInteraction.GetHoverText))]
 
         public class HoverTextOverride
         {
+
+            public static bool Prefix => false;
 
             public static void Postfix(FireplaceInteraction __instance, ref string __result)
             {
@@ -64,19 +66,13 @@ namespace ImprovedFires.Patches
 
                 }
 
-                LocalizedString defaultText = __instance.m_DefaultHoverText;
-
-                if (defaultText != null)
-                {
-                    string localized = Localization.Get(defaultText.m_LocalizationID);
-
-                    __result = string.Concat(localized, extraText);
-                }
+                Main.Logger.Log("Setting hover text to " + extraText, ComplexLogger.FlaggedLoggingLevel.Debug);
 
                 __result = extraText;
 
             }
 
-        }
+        } **/
+
     }
 }
