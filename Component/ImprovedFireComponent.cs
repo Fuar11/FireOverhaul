@@ -25,6 +25,8 @@ namespace ImprovedFires.Component
         private float totalPower;
         public float burnRateMult;
 
+        public float innerRadius;
+        public float outerRadius;
 
         public const float BASELINE_POWER = 4500f; // watts
         public const float BASELINE_INTERNAL_TEMP = 700f;  // degrees
@@ -72,6 +74,8 @@ namespace ImprovedFires.Component
 
             totalExternalFireTemperature = CalculateExternalTemperature();
 
+            SetInnerAndOuterRadius();
+         
             state = SetState();
             //do more effects based on temp
         }
@@ -80,6 +84,12 @@ namespace ImprovedFires.Component
         {
             Main.Logger.Log($"Adding fuel item {item.name}", ComplexLogger.FlaggedLoggingLevel.Debug);
             fuelPool.Add(item);
+        }
+
+        public void RemoveFuelItem(FireFuelItem item)
+        {
+            Main.Logger.Log($"Removing fuel item {item.name}", ComplexLogger.FlaggedLoggingLevel.Debug);
+            fuelPool.Remove(item);
         }
 
         public int GetCharcoal()
@@ -115,6 +125,41 @@ namespace ImprovedFires.Component
                    return
             (totalPower / BASELINE_POWER)
             * BASELINE_EXTERNAL_TEMP;
+        }
+
+        private void SetInnerAndOuterRadius()
+        {
+
+            float heatScale = totalExternalFireTemperature / 30f;
+            innerRadius = Mathf.Clamp(1.5f * heatScale, 0.5f, 3f);
+            outerRadius = Mathf.Clamp(4f * heatScale, 2f, 8f);
+        }
+
+        public bool CanTakeTorch()
+        {
+            foreach (FireFuelItem fuel in fuelPool)
+            {
+                if(fuel.type == Enums.FuelType.Stick || fuel.name == "Reclaimed Wood" && fuel.burnAmount <= 0.3f)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public void TakeTorch()
+        {
+            Main.Logger.Log("Attempting to take torch.", ComplexLogger.FlaggedLoggingLevel.Debug);
+
+            foreach (FireFuelItem fuel in fuelPool)
+            {
+                if(fuel.type == Enums.FuelType.Stick || fuel.name == "Reclaimed Wood" && fuel.burnAmount <= 0.3f)
+                {
+                    RemoveFuelItem(fuel);
+                    return;
+                }
+            }
         }
 
         private FireState SetState()

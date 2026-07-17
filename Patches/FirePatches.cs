@@ -116,8 +116,10 @@ namespace ImprovedFires.Patches
 
                 iFire.AddFuelItem(fuelItem);
 
-
-
+                __instance.m_HeatSource.m_MaxTempIncrease = iFire.totalExternalFireTemperature;
+                __instance.m_FuelHeatIncrease = iFire.totalExternalFireTemperature;
+                __instance.m_HeatSource.m_MaxTempIncreaseInnerRadius = iFire.innerRadius; 
+                __instance.m_HeatSource.m_MaxTempIncreaseOuterRadius = iFire.outerRadius * __instance.GetFireOuterRadiusScale(); //maybe remove this
 
                 if (fuelItem.type == FuelType.Wood || fuelItem.type == FuelType.Wood || fuelItem.type == FuelType.Synthetic)
                 {
@@ -156,10 +158,8 @@ namespace ImprovedFires.Patches
                 __instance.m_HeatSource.TurnOn();
                 __instance.m_HeatSource.m_MaxTempIncrease = iFire.totalExternalFireTemperature;
                 __instance.m_FuelHeatIncrease = iFire.totalExternalFireTemperature;
-                __instance.m_HeatSource.m_MaxTempIncreaseInnerRadius = fuel.m_HeatInnerRadius; //i might change these things later, I don't know what they are
-                __instance.m_HeatSource.m_MaxTempIncreaseOuterRadius = fuel.m_HeatOuterRadius * __instance.GetFireOuterRadiusScale();
-
-         
+                __instance.m_HeatSource.m_MaxTempIncreaseInnerRadius = iFire.innerRadius;
+                __instance.m_HeatSource.m_MaxTempIncreaseOuterRadius = iFire.outerRadius * __instance.GetFireOuterRadiusScale(); //maybe remove this
 
                 __instance.m_FX.TriggerStage(Il2Cpp.FireState.Starting_TinderSmallFlame, true, true);
 
@@ -193,5 +193,19 @@ namespace ImprovedFires.Patches
 
         }
 
+        [HarmonyPatch(typeof(Fire), nameof(Fire.CanTakeTorch))]
+
+        public class TakeTorchLogic
+        {
+
+            public static bool Prefix => false;
+
+            public static void Postfix(Fire __instance, ref bool __result)
+            {
+                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+
+                __result = iFire.CanTakeTorch();
+            }
+        }
     }
 }

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine.Rendering.RenderGraphModule.NativeRenderPassCompiler;
 
 namespace ImprovedFires.Patches
 {
@@ -17,10 +18,26 @@ namespace ImprovedFires.Patches
         public class HeatSourceOn
         {
 
-            public static bool Prefix => false;
+            public static bool Prefix(HeatSource __instance)
+            {
+                string name = __instance.gameObject.name.ToLowerInvariant();
+                if (name.Contains("candle") || name.Contains("flare") || name.Contains("lamp") || name.Contains("lantern") || name.Contains("torch") || name.Contains("heater"))
+                {
+                    return true;
+                }
+                else return false;
+
+            }
 
             public static void Postfix(HeatSource __instance)
             {
+                string name = __instance.gameObject.name.ToLowerInvariant();
+
+                if (name.Contains("candle") || name.Contains("flare") || name.Contains("lamp") || name.Contains("lantern") || name.Contains("torch") || name.Contains("heater"))
+                {
+                    return;
+                }
+
                 ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
 
                 __instance.m_MaxTempIncrease = iFire.totalExternalFireTemperature; //the current temp
@@ -33,7 +50,17 @@ namespace ImprovedFires.Patches
 
         public class HeatSourceDisableUpdateLoop
         {
-            public static bool Prefix => false;
+            public static bool Prefix(HeatSource __instance)
+            {
+
+                string name = __instance.gameObject.name.ToLowerInvariant();
+                if (name.Contains("candle") || name.Contains("flare") || name.Contains("lamp") || name.Contains("lantern") || name.Contains("torch") || name.Contains("heater"))
+                {
+                    return true;
+                }
+                else return false;
+
+            }
         }
     }
 }
