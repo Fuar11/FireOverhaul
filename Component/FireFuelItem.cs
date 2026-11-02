@@ -29,8 +29,8 @@ namespace ImprovedFires.Component
         public float charcoalYield;
 
         //percentages of consumption
-        public float burnAmount = 0f;
-        public float coalsAmount = 0f;
+        public float burnAmount = 0f; //amount of fuel consumed before turning to coals or embers, 0 = full, 1 = fully consumed
+        public float coalsAmount = 0f; //amount of fuel consumed when it is coals (a fraction of the total fuel)
         public float embersAmount = 0f;
 
         public float remainingEnergy;
@@ -75,7 +75,7 @@ namespace ImprovedFires.Component
             }
             else if (type == FuelType.Paper)
             {
-                coalsPowerFactor = 0.02f;
+                coalsPowerFactor = 0.01f;
                 emberPowerFactor = 0.001f;
             }
             else if (type == FuelType.Synthetic)
@@ -153,11 +153,11 @@ namespace ImprovedFires.Component
 
                 if (remainingEnergy <= energyContent * 0.01f)
                 {
-                    state = FireFuelItemState.Ash;
+                    ReduceToAsh();
                 }
             }
-
-
+            
+            
             remainingEnergy -= currentPowerOutput * fire.burnRateMult * gameDeltaTime; //this may need adjustment, not sure yet, deltaTime always confuses me
 
             burnAmount = 1f - (remainingEnergy / energyContent);
@@ -257,23 +257,7 @@ namespace ImprovedFires.Component
 
         public float CalculateEstimatedRemainingDurationInSeconds(ImprovedFireComponent fire)
         {
-
-            switch (state)
-            {
-                case FireFuelItemState.Burning:
-                case FireFuelItemState.Coals:
-
-                    return remainingEnergy / (currentPowerOutput * fire.burnRateMult);
-
-                case FireFuelItemState.Embers:
-                case FireFuelItemState.Ash:
-                case FireFuelItemState.Heating:
-                case FireFuelItemState.Cold:
-                case FireFuelItemState.None:
-                    return 0f;
-            }
-
-            return 0f;
+            return remainingEnergy / (currentPowerOutput * fire.burnRateMult);
         }
 
         public void ReduceToAsh()

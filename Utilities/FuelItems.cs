@@ -16,8 +16,14 @@ namespace ImprovedFires.Utilities
         static FireFuelItem reclaimedWood = new FireFuelItem("Reclaimed Wood", FuelType.Wood, 58.3f, 1.5f, 325, 3500f, 4_000_00f, 0.65f, 0.88f, 0.1f);
         static FireFuelItem stick = new FireFuelItem("Stick", FuelType.Stick, 18, 0.5f, 200, 3000f, 1_850_00f, 0.85f, 0.95f, 0.08f);
         static FireFuelItem coal = new FireFuelItem("Coal", FuelType.Coal, 50, 5, 500, 3500f, 7_500_00f, 0.2f, 0.95f, 0f);
-        static FireFuelItem book = new FireFuelItem("Book", FuelType.Paper, 40, 1, 250, 2500f, 7_500_00f, 0.9f, 0.97f, 0.02f);
+        static FireFuelItem book = new FireFuelItem("Book", FuelType.Paper, 40, 1, 250, 2500f, 7_500_00f, 0.96f, 0.97f, 0.02f);
         static FireFuelItem firelog = new FireFuelItem("Firelog", FuelType.Synthetic, 110, 3, 350, 5500f, 36_000_00f, 0.75f, 0.95f, 0.05f);
+
+        //tinder
+
+        static FireFuelItem kindling = new FireFuelItem("Wood Tinder", FuelType.Paper, 2, 0.1f, 50, 1500f, 1_000_00f, 0.99f, 0.99f, 0f);
+        static FireFuelItem paper = new FireFuelItem("Paper Tinder", FuelType.Paper, 4, 0f, 50, 2000f, 950_00f, 0.99f, 0.99f, 0f);
+        static FireFuelItem cattailHead = new FireFuelItem("Cattail Head", FuelType.Paper, 2, 0f, 50, 1500f, 350_00f, 0.99f, 0.99f, 0f);
 
         public static FireFuelItem GetFuelItemInstance(string name)
         {
@@ -31,6 +37,11 @@ namespace ImprovedFires.Utilities
             if (name.ToLowerInvariant().Contains("coal")) return coal;
             if (name.ToLowerInvariant().Contains("book")) return book;
             if (name.ToLowerInvariant().Contains("firelog")) return firelog;
+
+           //tinder/kindling
+            if( name.ToLowerInvariant().Contains("gear_tinder") || name.ToLowerInvariant().Contains("bark")) return kindling;
+            if (name.ToLowerInvariant().Contains("newsprint") || name.ToLowerInvariant().Contains("paperstack") || name.ToLowerInvariant().Contains("cash")) return paper;
+            if (name.ToLowerInvariant().Contains("cattail")) return cattailHead;
 
             return null;
 

@@ -9,25 +9,22 @@ namespace ImprovedFires.Patches
 {
     internal class UIPatches
     {
-        /**
+        
         [HarmonyPatch(typeof(FireplaceInteraction), nameof(FireplaceInteraction.GetHoverText))]
 
         public class HoverTextOverride
         {
 
-            public static bool Prefix => false;
-
             public static void Postfix(FireplaceInteraction __instance, ref string __result)
             {
 
-                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
-
                 Fire fire = __instance.Fire;
+                ImprovedFireComponent iFire = fire.gameObject.GetComponent<ImprovedFireComponent>();
                 string extraText = "";
 
                 if (fire == null || iFire == null)
                 {
-                    __result = null;
+                    Main.Logger.Log("Fire or ImprovedFireComponent is null, skipping hover text override", ComplexLogger.FlaggedLoggingLevel.Error);
                     return;
                 }
 
@@ -38,15 +35,12 @@ namespace ImprovedFires.Patches
 
                     if (iFire.state == Enums.FireState.Embers) state = "Embers";
                     else if (iFire.state == Enums.FireState.Coals) state = "Glowing Coals";
-                    else if (iFire.state == Enums.FireState.Dwindling) state = "Dwindling";
-                    else if (iFire.state == Enums.FireState.Steady) state = "Steady Burn";
-                    else if (iFire.state == Enums.FireState.Raging) state = "Ragin";
+                    else if (iFire.state == Enums.FireState.Dwindling) state = "Dwindling Fire";
+                    else if (iFire.state == Enums.FireState.Steady) state = "Steady Fire";
+                    else if (iFire.state == Enums.FireState.Raging) state = "Raging Fire";
                     else state = "Unknown";
 
-                    string internalTemp = iFire.totalFireTemperature.ToString();
-                    string externalTemp = iFire.totalExternalFireTemperature.ToString();
-
-                    string[] values = new string[4];
+                    string[] values = new string[6];
 
                     values[0] = " (";
 
@@ -54,25 +48,49 @@ namespace ImprovedFires.Patches
 
                     values[2] = "\n";
 
-                    values[3] = fire.GetHeatIncreaseText(
-                        true
-                    );
+                    values[3] = GetHeatIncreaseText(iFire.totalExternalFireTemperature, true, fire);
 
                     values[4] = " - ";
 
-                    values[5] = internalTemp;
+                    values[5] = GetHeatIncreaseText(iFire.totalFireTemperature, true, fire);
 
                     extraText = string.Concat(values);
-
+                    
+                    __result = extraText;
                 }
-
-                Main.Logger.Log("Setting hover text to " + extraText, ComplexLogger.FlaggedLoggingLevel.Debug);
-
-                __result = extraText;
-
             }
 
-        } **/
+            private static string GetHeatIncreaseText(float heatIncrease, bool includeUnits, Fire fire)
+            {
 
+                string text = "";
+                string text2 = Localization.Get("GAMEPLAY_DegreesCUnits");
+                if (GetUserMetric() == 2)
+                {
+                    heatIncrease *= 1.8f;
+                    text2 = Localization.Get("GAMEPLAY_DegreesFUnits");
+                }
+                heatIncrease = fire.RoundOutput(heatIncrease);
+                if (Il2Cpp.Utils.IsZero(heatIncrease))
+                {
+                    return text + "+0" + text2;
+                }
+                return text + "+" + heatIncrease + text2;
+            }
+
+            public static int GetUserMetric()
+{
+                Panel_OptionsMenu Options = InterfaceManager.GetPanel<Panel_OptionsMenu>();
+                if (Options == null) return -1;
+                Il2CppSystem.Collections.Generic.List<GameObject> Items = Options.m_DisplayMenuItems;
+                if (Items == null) return -2;
+                GameObject Units = Items[3];
+                if (Units == null) return -3;
+                ConsoleComboBox ComboBox = Units.GetComponent<ConsoleComboBox>();
+                if (ComboBox == null) return -4;
+                if (ComboBox.GetCurrentIndex() == 0) return 1;
+                else return 2;
+}
+        } 
     }
 }

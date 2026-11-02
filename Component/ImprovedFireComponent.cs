@@ -36,6 +36,8 @@ namespace ImprovedFires.Component
 
         private bool extinguished = false;
 
+        public bool changeFX = true;
+
         //state fields
         int burningCount;
         int coalCount;
@@ -64,6 +66,12 @@ namespace ImprovedFires.Component
             {
                 fuel.UpdateStats(this, extinguished);
 
+                if(fuel.state == Enums.FireFuelItemState.Ash)
+                {
+                    RemoveFuelItem(fuel);
+                    continue;
+                }
+
                 totalPower += fuel.currentPowerOutput;
             }
 
@@ -78,17 +86,24 @@ namespace ImprovedFires.Component
 
             SetInnerAndOuterRadius();
          
-            state = SetState();
-            //do more effects based on temp
+            if(state != FireState.Starting && state != FireState.None)
+            {
+                state = SetState();
+                //do more effects based on temp
+            }
+           
 
             d_estimatedFireDurationSeconds = GetEstimatedFireDuration();
 
         }
 
-        public void AddFuelItem(FireFuelItem item)
+        public void AddFuelItem(FireFuelItem item, int multi)
         {
             Main.Logger.Log($"Adding fuel item {item.name}", ComplexLogger.FlaggedLoggingLevel.Debug);
-            fuelPool.Add(item);
+            for (int i = 0; i < multi; i++)
+            {
+                fuelPool.Add(item);
+            }
         }
 
         public void RemoveFuelItem(FireFuelItem item)
@@ -141,7 +156,7 @@ namespace ImprovedFires.Component
         }
 
 
-        public float GetEstimatedFireDuration()
+        public float GetEstimatedFireDuration() //this needs MAJOR changes
         {
             float longestDuration = 0f;
 
@@ -194,6 +209,9 @@ namespace ImprovedFires.Component
 
         private FireState SetState() //really shitty state manager
         {
+
+            FireState fireState = FireState.None;
+
             totalCombustion =
                 fuelPool
                 .Where(x => x.state == Enums.FireFuelItemState.Burning)
@@ -204,22 +222,38 @@ namespace ImprovedFires.Component
             emberCount = fuelPool.Count(f => f.state == Enums.FireFuelItemState.Embers);
             //bool allAsh = fuelPool.Count(f => f.state == Enums.FireFuelItemState.Ash) == fuelPool.Count; //energy remaining is almost 0
 
-            if (state == FireState.Starting && burningCount == 0 && coalCount == 0 && emberCount == 0) return FireState.Starting; //fire is starting and no fuel is burning yet
-            else if (burningCount == 0 && coalCount == 0 && emberCount > 0) return FireState.Embers;
-            else if (burningCount == 0 && coalCount > 0) return FireState.Coals;
-            else if (burningCount > 0 && totalCombustion < 0.5) return FireState.Dwindling;
-            else if (burningCount > 0 && totalCombustion < 1.5) return FireState.Steady;
-            else if (burningCount > 0 && totalCombustion > 1.5) return FireState.Raging;
-            else if (state != FireState.None && burningCount == 0 && coalCount == 0 && emberCount == 0) //fire has no energy releasing fuel left
-            {
-                Main.Logger.Log("All fuel is ash. Setting fire state to none!", ComplexLogger.FlaggedLoggingLevel.Debug);
-                return FireState.None;
+            if (burningCount == 0 && coalCount == 0 && emberCount > 0){ 
+                
+                //Main.Logger.Log("All fuel is embers. Setting fire state to embers!", ComplexLogger.FlaggedLoggingLevel.Debug);
+                fireState = FireState.Embers;
             }
-            else
-            {
-                Main.Logger.Log("Setting fire state to none!", ComplexLogger.FlaggedLoggingLevel.Debug);
-                return FireState.None;
+            else if (burningCount == 0 && coalCount > 0) {
+                //Main.Logger.Log("All fuel is coals. Setting fire state to coals!", ComplexLogger.FlaggedLoggingLevel.Debug);
+                fireState = FireState.Coals;
             }
+            else if (burningCount > 0 && totalCombustion < 0.5) {
+                //Main.Logger.Log("Fire is dwindling. Setting fire state to dwindling!", ComplexLogger.FlaggedLoggingLevel.Debug);
+                fireState = FireState.Dwindling;
+            }
+            else if (burningCount > 0 && totalCombustion < 1.5) {
+                //Main.Logger.Log("Fire is steady. Setting fire state to steady!", ComplexLogger.FlaggedLoggingLevel.Debug);
+                fireState = FireState.Steady;
+            }
+            else if (burningCount > 0 && totalCombustion > 1.5) {
+                //Main.Logger.Log("Fire is raging. Setting fire state to raging!", ComplexLogger.FlaggedLoggingLevel.Debug);
+                fireState = FireState.Raging;
+            }
+            else if (burningCount == 0 && coalCount == 0 && emberCount == 0) //fire has no energy releasing fuel left
+            {
+                //Main.Logger.Log("All fuel is ash. Setting fire state to none!", ComplexLogger.FlaggedLoggingLevel.Debug);
+                fireState = FireState.None;
+            }
+            else {
+                //Main.Logger.Log("No appropriate state found.", ComplexLogger.FlaggedLoggingLevel.Debug);
+            }
+
+            if( fireState != FireState.None) changeFX = true; 
+            return fireState;
         }
 
     }

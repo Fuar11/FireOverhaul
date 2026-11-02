@@ -36,7 +36,7 @@ namespace ImprovedFires.Patches
 
         public class DisableUpdateLoop
         {
-            public static bool Prefix => false;
+            public static bool Prefix() => false;
 
             public static void Postfix(Fire __instance)
             {
@@ -53,7 +53,7 @@ namespace ImprovedFires.Patches
                     __instance.m_FX.TriggerStage(__instance.m_FireState, shouldPlay: true);
                     __instance.m_TriggerStageRequested = false;
                 }
-                if (__instance.m_FireState == Il2Cpp.FireState.Off) //completely dead
+                if (__instance.m_FireState == Il2Cpp.FireState.Off) //completely dead, all of this might need changing too
                 {
                     __instance.m_TimeOffSeconds += Time.deltaTime; //real world seconds
                     if (__instance.m_TimeOffSeconds > 2f)
@@ -64,35 +64,39 @@ namespace ImprovedFires.Patches
                     }
                     return;
                 }
-                __instance.UpdateFireStage();
+
+                __instance.UpdateFireStage(); //might remove this since it only affects fire starting
                 //__instance.MaybeBlowOutFromWind(); this needs a patch
                 __instance.UpdateFireAudio();
 
                 if(iFire.state > 0 && __instance.GetFireState() == Il2Cpp.FireState.Off)
                 {
-                    
                 }
 
-                if (iFire.state == Enums.FireState.Raging)
+                if (iFire.state == Enums.FireState.Raging && iFire.changeFX)
                 {
-                    __instance.m_FX.TriggerStage(Il2Cpp.FireState.FullBurn, true); //need something else here
+                    __instance.m_FX.TriggerStage(Il2Cpp.FireState.FullBurn, true, true); //need something else here
+                    iFire.changeFX = false;
                 }
-                if (iFire.state == Enums.FireState.Steady)
+                if (iFire.state == Enums.FireState.Steady && iFire.changeFX)
                 {
-                    __instance.m_FX.TriggerStage(Il2Cpp.FireState.FullBurn, true); 
+                    __instance.m_FX.TriggerStage(Il2Cpp.FireState.FullBurn, true, true); 
+                    iFire.changeFX = false;
                 }
-                if (iFire.state == Enums.FireState.Dwindling)
+                if (iFire.state == Enums.FireState.Dwindling && iFire.changeFX)
                 {
-                    __instance.m_FX.TriggerStage(Il2Cpp.FireState.Blownout, true);
+                    __instance.m_FX.TriggerStage(Il2Cpp.FireState.Starting_MediumBurn, true, true);
+                    iFire.changeFX = false;
                 }
-                if (iFire.state == Enums.FireState.Coals)
+                if (iFire.state == Enums.FireState.Coals && iFire.changeFX)
                 {
-                    __instance.m_FX.TriggerStage(Il2Cpp.FireState.Starting_TinderSmolder, true); //vanilla embers stage used to depict coals
+                    __instance.m_FX.TriggerStage(Il2Cpp.FireState.Starting_TinderSmallFlame, true, true); //vanilla embers stage used to depict coals
+                    iFire.changeFX = false;
                 }
-                if(iFire.state == Enums.FireState.Embers)
+                if(iFire.state == Enums.FireState.Embers && iFire.changeFX)
                 {
-                    __instance.m_FX.TriggerStage(Il2Cpp.FireState.Starting_FireStarterUse, true); //vanilla starter use stage used to depict embers EXPERIMENTAL
-                }
+                    __instance.m_FX.TriggerStage(Il2Cpp.FireState.Starting_TinderSmolder, true, true); //vanilla starter use stage used to depict embers EXPERIMENTAL
+                    iFire.changeFX = false;}
                 if (iFire.state == Enums.FireState.None)
                 {
                     Main.Logger.Log("Fire is out!", ComplexLogger.FlaggedLoggingLevel.Debug);
@@ -121,14 +125,14 @@ namespace ImprovedFires.Patches
                 FireFuelItem fuelItem = Utilities.FuelItems.GetFuelItemInstance(fuel.name);
                 fuelItem.gearItemRef = fuel;
 
-                iFire.AddFuelItem(fuelItem);
+                iFire.AddFuelItem(fuelItem, 1);
 
-                __instance.m_HeatSource.m_MaxTempIncrease = iFire.totalExternalFireTemperature;
-                __instance.m_FuelHeatIncrease = iFire.totalExternalFireTemperature;
+                __instance.m_HeatSource.m_TempIncrease = iFire.totalExternalFireTemperature;
+                //__instance.m_FuelHeatIncrease = iFire.totalExternalFireTemperature;
                 __instance.m_HeatSource.m_MaxTempIncreaseInnerRadius = iFire.innerRadius; 
                 __instance.m_HeatSource.m_MaxTempIncreaseOuterRadius = iFire.outerRadius * __instance.GetFireOuterRadiusScale(); //maybe remove this
 
-                if (fuelItem.type == FuelType.Wood || fuelItem.type == FuelType.Wood || fuelItem.type == FuelType.Synthetic)
+                if (fuelItem.type == FuelType.Wood || fuelItem.type == FuelType.Synthetic)
                 {
                     __instance.m_FX.TriggerFlareupLarge();
                 }
@@ -175,9 +179,10 @@ namespace ImprovedFires.Patches
                     fuelItem.burnAmount += 0.01f; //a little push
                     fuelItem.state = FireFuelItemState.Burning;
 
-                    //add tinder here too
+                    //find a way to add tinder here
 
-                    iFire.AddFuelItem(fuelItem);
+                    iFire.AddFuelItem(fuelItem, 2); //adds 2 instances of the fuel item just to get the fire started, testing this out
+                    iFire.state = Enums.FireState.Dwindling; 
                 }
                 else
                 {

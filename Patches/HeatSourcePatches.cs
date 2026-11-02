@@ -40,8 +40,8 @@ namespace ImprovedFires.Patches
 
                 ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
 
-                __instance.m_MaxTempIncrease = iFire.totalExternalFireTemperature; //the current temp
-                __instance.m_TempIncrease = iFire.totalExternalFireTemperature; 
+                __instance.m_MaxTempIncrease = iFire.totalExternalFireTemperature; //this one might not matter
+                __instance.m_TempIncrease = iFire.totalExternalFireTemperature; //the current temp
                 __instance.m_StartingTemp = iFire.totalExternalFireTemperature; 
             }
         }
@@ -59,6 +59,22 @@ namespace ImprovedFires.Patches
                     return true;
                 }
                 else return false;
+
+            }
+
+              public static void Postfix(HeatSource __instance)
+            {
+
+                string name = __instance.gameObject.name.ToLowerInvariant();
+                if (name.Contains("candle") || name.Contains("flare") || name.Contains("lamp") || name.Contains("lantern") || name.Contains("torch") || name.Contains("heater"))
+                {
+                    return;
+                }
+                else
+                {
+                    ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>();
+                    __instance.m_TempIncrease = iFire.totalExternalFireTemperature;
+                }
 
             }
         }
