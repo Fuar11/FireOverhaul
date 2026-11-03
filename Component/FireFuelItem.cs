@@ -21,6 +21,9 @@ namespace ImprovedFires.Component
         public float maxPowerOutput;       // Maximum watts when burning at optimal rate
         public float coalsPowerOutput;     // Maximum watts when burning residual carbon
         public float emberPowerOutput;     // Remaining watts when emitting lasting ambient heat
+        public float burningRadiantFraction;
+        public float coalsRadiantFraction;
+        public float embersRadiantFraction;
         public float timeToIgniteAtTemp;   //0 = instant ignite
         public float ignitionTemp;         // Temperature at which combustion can commence
         public float coalsThreshold;       // Amount of total fuel consumption required for fuel to be burning as coals
@@ -60,28 +63,43 @@ namespace ImprovedFires.Component
 
             if(type == FuelType.Wood)
             {
-                coalsPowerFactor = 0.4f;
+                coalsPowerFactor = 0.2f;
                 emberPowerFactor = 0.095f;
+                burningRadiantFraction = 0.25f;
+                coalsRadiantFraction = 0.45f;
+                embersRadiantFraction = 0.45f;
             }
             else if (type == FuelType.Stick)
             {
                 coalsPowerFactor = 0.07f;
                 emberPowerFactor = 0.02f;
+                burningRadiantFraction = 0.2f;
+                coalsRadiantFraction = 0.4f;
+                embersRadiantFraction = 0.4f;
             }
             else if(type == FuelType.Coal)
             {
                 coalsPowerFactor = 0.85f;
                 emberPowerFactor = 0.3f;
+                burningRadiantFraction = 0.45f;
+                coalsRadiantFraction = 0.5f;
+                embersRadiantFraction = 0.5f;
             }
             else if (type == FuelType.Paper)
             {
                 coalsPowerFactor = 0.01f;
                 emberPowerFactor = 0.001f;
+                burningRadiantFraction = 0.15f;
+                coalsRadiantFraction = 0.3f;
+                embersRadiantFraction = 0.3f;
             }
             else if (type == FuelType.Synthetic)
             {
                 coalsPowerFactor = 0.45f;
                 emberPowerFactor = 0.095f;
+                burningRadiantFraction = 0.3f;
+                coalsRadiantFraction = 0.45f;
+                embersRadiantFraction = 0.45f;
             }
 
             coalsPowerOutput = maxPowerOutput * coalsPowerFactor;
@@ -92,10 +110,8 @@ namespace ImprovedFires.Component
         }
 
     
-        public void UpdateStats(ImprovedFireComponent fire, bool extinguish)
+        public void UpdateStats(ImprovedFireComponent fire, bool extinguish, float gameDeltaTime)
         {
-
-            float gameDeltaTime = GameManager.GetTimeOfDayComponent().GetTODSeconds(Time.deltaTime);
 
             if (state == FireFuelItemState.Cold)
             {
@@ -118,24 +134,25 @@ namespace ImprovedFires.Component
                     1f,
                     2f
                 );
-                float ignitionDuration = timeToIgniteAtTemp / heatingRatio;
+                float ignitionDuration = (timeToIgniteAtTemp * 60f)  / heatingRatio;
 
                 ignitionProgress += gameDeltaTime / ignitionDuration;
                 if (ignitionProgress >= 1f)
                 {
-                    burnAmount += 0.01f; //a little push
+                    //burnAmount += 0.01f; 
+                    remainingEnergy -= energyContent * 0.01f; //a little push
                     state = FireFuelItemState.Burning;
                 }
             }
             else if (state == FireFuelItemState.Burning)
             {
-                currentPowerOutput = maxPowerOutput * CalculateCombustionCurve();
+                currentPowerOutput = maxPowerOutput * CalculateCombustionCurve() * fire.burnRateMult;
 
                 if (burnAmount >= coalsThreshold) state = FireFuelItemState.Coals;
             }
             else if(state == FireFuelItemState.Coals)
             {
-                currentPowerOutput = coalsPowerOutput * CalculateSlowDecayCurve();
+                currentPowerOutput = coalsPowerOutput * CalculateSlowDecayCurve() * fire.burnRateMult;
 
                 if (burnAmount >= emberThreshold) state = FireFuelItemState.Embers;
             }
@@ -148,8 +165,8 @@ namespace ImprovedFires.Component
                     return;
                 }
 
-                currentPowerOutput = emberPowerOutput * CalculateEmberCurve();
-                Main.Logger.Log($"Fuel {name} embers power output is {currentPowerOutput}", ComplexLogger.FlaggedLoggingLevel.Debug);
+                currentPowerOutput = emberPowerOutput * CalculateEmberCurve() * fire.burnRateMult;
+                //Main.Logger.Log($"Fuel {name} embers power output is {currentPowerOutput}", ComplexLogger.FlaggedLoggingLevel.Debug);
 
                 if (remainingEnergy <= energyContent * 0.01f)
                 {
@@ -158,7 +175,7 @@ namespace ImprovedFires.Component
             }
             
             
-            remainingEnergy -= currentPowerOutput * fire.burnRateMult * gameDeltaTime; //this may need adjustment, not sure yet, deltaTime always confuses me
+            remainingEnergy -= currentPowerOutput * gameDeltaTime; //this may need adjustment, not sure yet, deltaTime always confuses me
 
             burnAmount = 1f - (remainingEnergy / energyContent);
 
@@ -174,9 +191,8 @@ namespace ImprovedFires.Component
                 case FuelType.Stick:
                     return CalculateStickCombustion();
                 case FuelType.Coal:
-                    return Mathf.Clamp01(
-                       Mathf.Sin(burnAmount * Mathf.PI * 0.8f)
-                   );
+                     float t = Mathf.Clamp01(burnAmount / coalsThreshold);
+                    return Mathf.Lerp(0.3f, 1f, t);
                 case FuelType.Paper:
                     return Mathf.Pow(1f - burnAmount, 1.5f);
                 case FuelType.Synthetic:
@@ -215,7 +231,8 @@ namespace ImprovedFires.Component
         {
             coalsAmount = Mathf.InverseLerp(coalsThreshold, emberThreshold, burnAmount);
 
-            return 1f - Mathf.Pow(coalsAmount, 2f);
+            float floor = coalsPowerOutput > 0f ? emberPowerOutput / coalsPowerOutput : 0.2f;
+            return Mathf.Lerp(1f, floor, coalsAmount * coalsAmount);
         }
 
         private float CalculateEmberCurve()
@@ -255,15 +272,27 @@ namespace ImprovedFires.Component
             return 0f;
         }
 
+        public float GetRadiantPower()
+        {
+            switch (state)
+            {
+                case FireFuelItemState.Burning: return burningRadiantFraction * currentPowerOutput;
+                case FireFuelItemState.Coals: return coalsRadiantFraction * currentPowerOutput;
+                case FireFuelItemState.Embers: return embersRadiantFraction * currentPowerOutput;
+                default: return 0f;
+            }
+        }
+
         public float CalculateEstimatedRemainingDurationInSeconds(ImprovedFireComponent fire)
         {
-            return remainingEnergy / (currentPowerOutput * fire.burnRateMult);
+            return remainingEnergy / currentPowerOutput;
         }
 
         public void ReduceToAsh()
         {
             Main.Logger.Log("Reducing energy of fuel to 0.", ComplexLogger.FlaggedLoggingLevel.Debug);
             remainingEnergy = 0f;
+            currentPowerOutput = 0f;
             state = FireFuelItemState.Ash;
         }
 

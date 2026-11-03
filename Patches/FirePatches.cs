@@ -115,7 +115,7 @@ namespace ImprovedFires.Patches
         public class AddFuelToPool
         {
 
-            public static bool Prefix => false;
+            public static bool Prefix() => false;
 
             public static void Postfix(Fire __instance, ref GearItem fuel)
             {
@@ -125,7 +125,7 @@ namespace ImprovedFires.Patches
                 FireFuelItem fuelItem = Utilities.FuelItems.GetFuelItemInstance(fuel.name);
                 fuelItem.gearItemRef = fuel;
 
-                iFire.AddFuelItem(fuelItem, 1);
+                iFire.AddFuelItem(fuelItem);
 
                 __instance.m_HeatSource.m_TempIncrease = iFire.totalExternalFireTemperature;
                 //__instance.m_FuelHeatIncrease = iFire.totalExternalFireTemperature;
@@ -181,7 +181,7 @@ namespace ImprovedFires.Patches
 
                     //find a way to add tinder here
 
-                    iFire.AddFuelItem(fuelItem, 2); //adds 2 instances of the fuel item just to get the fire started, testing this out
+                    iFire.AddFuelItem(fuelItem);
                     iFire.state = Enums.FireState.Dwindling; 
                 }
                 else
@@ -198,7 +198,7 @@ namespace ImprovedFires.Patches
         public class FireTurnOnOverride
         {
 
-            public static bool Prefix => false;
+            public static bool Prefix() => false;
 
             public static void Postfix(Fire __instance, ref FuelSourceItem fuel)
             {
@@ -225,7 +225,7 @@ namespace ImprovedFires.Patches
         public class FireTurnOffOverride
         {
 
-            public static bool Prefix => false;
+            public static bool Prefix() => false;
 
             public static void Postfix(Fire __instance)
             {
@@ -251,7 +251,7 @@ namespace ImprovedFires.Patches
         public class TakeTorchLogic
         {
 
-            public static bool Prefix => false;
+            public static bool Prefix() => false;
 
             public static void Postfix(Fire __instance, ref bool __result)
             {

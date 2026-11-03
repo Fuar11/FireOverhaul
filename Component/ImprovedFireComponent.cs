@@ -25,17 +25,43 @@ namespace ImprovedFires.Component
         public float totalFireTemperature;
 
         private float totalPower;
+
+        private float totalRadiantPower;
+
+        public float flamePower;
+        public float coalsPower;
+        public float emberPower;
+
+        private float heatingFuelCount;
+
         public float burnRateMult;
 
         public float innerRadius;
         public float outerRadius;
 
+        //power
         public const float BASELINE_POWER = 4500f; // watts
         public const float BASELINE_INTERNAL_TEMP = 700f;  // degrees
-        public const float BASELINE_EXTERNAL_TEMP = 30f;  // degrees
+
+        //temperature control
+        public const float TEMP_HEAT_TIME_CONSTANT = 30f;  // game seconds
+        public const float TEMP_COOL_TIME_CONSTANT = 240f; // game seconds
+
+        public const float EXT_HEAT_TIME_CONSTANT = 60f;   // game seconds
+        public const float EXT_COOL_TIME_CONSTANT = 300f;  // game seconds
+
+        public const float MAX_RADIANT_HEAT = 80f;     // °C, vanilla max
+        public const float RADIANCE_POWER_SCALE = 3000f; // watts of radiant power
+
+        //state controls, in watts
+
+        public const float RAGING_ENTER = 9000f,  RAGING_EXIT = 7500f;
+        public const float STEADY_ENTER = 2500f,  STEADY_EXIT = 2000f;
+        public const float DWINDLE_ENTER = 300f,  DWINDLE_EXIT = 200f;
+        public const float COALS_MIN = 150f;
+
 
         private bool extinguished = false;
-
         public bool changeFX = true;
 
         //state fields
@@ -60,35 +86,66 @@ namespace ImprovedFires.Component
             }
 
             totalPower = 0;
-            burnRateMult = Mathf.Clamp(totalFireTemperature / BASELINE_INTERNAL_TEMP, 0.25f, 3f); //these values may need adjusting
+            totalRadiantPower = 0;
+
+            flamePower = 0;
+            coalsPower = 0;
+            emberPower = 0;
+            heatingFuelCount = 0;
+
+            burnRateMult = Mathf.Clamp(Mathf.Pow(totalFireTemperature / BASELINE_INTERNAL_TEMP, 0.4f), 0.5f, 1.5f);
 
             foreach (FireFuelItem fuel in fuelPool)
             {
-                fuel.UpdateStats(this, extinguished);
-
-                if(fuel.state == Enums.FireFuelItemState.Ash)
-                {
-                    RemoveFuelItem(fuel);
-                    continue;
-                }
-
+                fuel.UpdateStats(this, extinguished, gameDeltaTime);
                 totalPower += fuel.currentPowerOutput;
+                totalRadiantPower += fuel.GetRadiantPower();
+
+                switch (fuel.state)
+                {
+                    case Enums.FireFuelItemState.Burning:
+                        flamePower += fuel.currentPowerOutput;
+                        break;
+                    case Enums.FireFuelItemState.Coals:
+                        coalsPower += fuel.currentPowerOutput;
+                        break;
+                    case Enums.FireFuelItemState.Embers:
+                        emberPower += fuel.currentPowerOutput;
+                        break;
+                    case Enums.FireFuelItemState.Heating:
+                        heatingFuelCount++;
+                        break;
+                }
             }
+
+            fuelPool.RemoveAll(f => f.state == Enums.FireFuelItemState.Ash);
 
             float targetTemp = CalculateTemperature();
 
-            totalFireTemperature = Mathf.Lerp( //this may need some changing as well
-                totalFireTemperature,
-                targetTemp,
-                gameDeltaTime * 0.1f);
+            float tau = targetTemp > totalFireTemperature
+                ? TEMP_HEAT_TIME_CONSTANT
+                : TEMP_COOL_TIME_CONSTANT;
 
-            totalExternalFireTemperature = CalculateExternalTemperature();
+            float k = 1f - Mathf.Exp(-gameDeltaTime / tau);
+            totalFireTemperature = Mathf.Lerp(totalFireTemperature, targetTemp, k);
+
+            float targetTempExt = CalculateExternalTargetTemperature();
+
+            float extTau = targetTempExt > totalExternalFireTemperature
+                ? EXT_HEAT_TIME_CONSTANT
+                : EXT_COOL_TIME_CONSTANT;
+
+            float extK = 1f - Mathf.Exp(-gameDeltaTime / extTau);
+
+            totalExternalFireTemperature = Mathf.Lerp(totalExternalFireTemperature, targetTempExt, extK);
 
             SetInnerAndOuterRadius();
          
             if(state != FireState.Starting && state != FireState.None)
             {
-                state = SetState();
+                FireState newState = SetState();
+                if(newState != state) changeFX = true;
+                state = newState;
                 //do more effects based on temp
             }
            
@@ -97,13 +154,10 @@ namespace ImprovedFires.Component
 
         }
 
-        public void AddFuelItem(FireFuelItem item, int multi)
+        public void AddFuelItem(FireFuelItem item)
         {
             Main.Logger.Log($"Adding fuel item {item.name}", ComplexLogger.FlaggedLoggingLevel.Debug);
-            for (int i = 0; i < multi; i++)
-            {
-                fuelPool.Add(item);
-            }
+            fuelPool.Add(item);   
         }
 
         public void RemoveFuelItem(FireFuelItem item)
@@ -119,8 +173,6 @@ namespace ImprovedFires.Component
 
             foreach (FireFuelItem fuel in fuelPool)
             {
-                fuel.UpdateStats(this, extinguished);
-
                 charcoalAmount += fuel.GetCharcoalProduced();
             }
 
@@ -140,19 +192,17 @@ namespace ImprovedFires.Component
             return Mathf.Clamp(temp, 20f, 1200f);
         }
 
-        public float CalculateExternalTemperature()
+        public float CalculateExternalTargetTemperature()
         {
-                   return
-            (totalPower / BASELINE_POWER)
-            * BASELINE_EXTERNAL_TEMP;
+            return MAX_RADIANT_HEAT * (1f - Mathf.Exp(-totalRadiantPower / RADIANCE_POWER_SCALE));
         }
 
         private void SetInnerAndOuterRadius()
         {
 
-            float heatScale = totalExternalFireTemperature / 30f;
-            innerRadius = Mathf.Clamp(1.5f * heatScale, 0.5f, 3f);
-            outerRadius = Mathf.Clamp(4f * heatScale, 2f, 8f);
+            float heatScale = totalExternalFireTemperature / MAX_RADIANT_HEAT;
+            innerRadius = Mathf.Lerp(0.5f, 3f, heatScale);
+            outerRadius = Mathf.Lerp(2f, 8f, heatScale);
         }
 
 
@@ -212,47 +262,26 @@ namespace ImprovedFires.Component
 
             FireState fireState = FireState.None;
 
-            totalCombustion =
-                fuelPool
-                .Where(x => x.state == Enums.FireFuelItemState.Burning)
-                .Sum(x => x.CalculateCombustionCurve());
+            bool wasRaging = state == FireState.Raging;
+            bool wasSteadyOrGreater = state == FireState.Steady || wasRaging;
+            bool wasFlaming = wasSteadyOrGreater || state == FireState.Dwindling;
 
-            burningCount = fuelPool.Count(f => f.state == Enums.FireFuelItemState.Burning);
-            coalCount = fuelPool.Count(f => f.state == Enums.FireFuelItemState.Coals);
-            emberCount = fuelPool.Count(f => f.state == Enums.FireFuelItemState.Embers);
-            //bool allAsh = fuelPool.Count(f => f.state == Enums.FireFuelItemState.Ash) == fuelPool.Count; //energy remaining is almost 0
+            if (flamePower >= RAGING_ENTER || (wasRaging && flamePower >= RAGING_EXIT))
+            return FireState.Raging;
 
-            if (burningCount == 0 && coalCount == 0 && emberCount > 0){ 
-                
-                //Main.Logger.Log("All fuel is embers. Setting fire state to embers!", ComplexLogger.FlaggedLoggingLevel.Debug);
-                fireState = FireState.Embers;
-            }
-            else if (burningCount == 0 && coalCount > 0) {
-                //Main.Logger.Log("All fuel is coals. Setting fire state to coals!", ComplexLogger.FlaggedLoggingLevel.Debug);
-                fireState = FireState.Coals;
-            }
-            else if (burningCount > 0 && totalCombustion < 0.5) {
-                //Main.Logger.Log("Fire is dwindling. Setting fire state to dwindling!", ComplexLogger.FlaggedLoggingLevel.Debug);
-                fireState = FireState.Dwindling;
-            }
-            else if (burningCount > 0 && totalCombustion < 1.5) {
-                //Main.Logger.Log("Fire is steady. Setting fire state to steady!", ComplexLogger.FlaggedLoggingLevel.Debug);
-                fireState = FireState.Steady;
-            }
-            else if (burningCount > 0 && totalCombustion > 1.5) {
-                //Main.Logger.Log("Fire is raging. Setting fire state to raging!", ComplexLogger.FlaggedLoggingLevel.Debug);
-                fireState = FireState.Raging;
-            }
-            else if (burningCount == 0 && coalCount == 0 && emberCount == 0) //fire has no energy releasing fuel left
-            {
-                //Main.Logger.Log("All fuel is ash. Setting fire state to none!", ComplexLogger.FlaggedLoggingLevel.Debug);
-                fireState = FireState.None;
-            }
-            else {
-                //Main.Logger.Log("No appropriate state found.", ComplexLogger.FlaggedLoggingLevel.Debug);
-            }
+            if (flamePower >= STEADY_ENTER || (wasSteadyOrGreater && flamePower >= STEADY_EXIT))
+                return FireState.Steady;
 
-            if( fireState != FireState.None) changeFX = true; 
+            if (flamePower >= DWINDLE_ENTER || (wasFlaming && flamePower >= DWINDLE_EXIT))
+                return FireState.Dwindling;
+
+            if (coalsPower >= COALS_MIN)
+                return FireState.Coals;
+
+            if (coalsPower + emberPower > 0f)
+                return FireState.Embers;
+
+
             return fireState;
         }
 

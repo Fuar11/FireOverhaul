@@ -20,8 +20,8 @@ namespace ImprovedFires.Patches
 
             public static bool Prefix(HeatSource __instance)
             {
-                string name = __instance.gameObject.name.ToLowerInvariant();
-                if (name.Contains("candle") || name.Contains("flare") || name.Contains("lamp") || name.Contains("lantern") || name.Contains("torch") || name.Contains("heater"))
+                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+                if (iFire == null)
                 {
                     return true;
                 }
@@ -31,14 +31,12 @@ namespace ImprovedFires.Patches
 
             public static void Postfix(HeatSource __instance)
             {
-                string name = __instance.gameObject.name.ToLowerInvariant();
+                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
 
-                if (name.Contains("candle") || name.Contains("flare") || name.Contains("lamp") || name.Contains("lantern") || name.Contains("torch") || name.Contains("heater"))
+                if (iFire == null)
                 {
                     return;
                 }
-
-                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
 
                 __instance.m_MaxTempIncrease = iFire.totalExternalFireTemperature; //this one might not matter
                 __instance.m_TempIncrease = iFire.totalExternalFireTemperature; //the current temp
@@ -53,8 +51,8 @@ namespace ImprovedFires.Patches
             public static bool Prefix(HeatSource __instance)
             {
 
-                string name = __instance.gameObject.name.ToLowerInvariant();
-                if (name.Contains("candle") || name.Contains("flare") || name.Contains("lamp") || name.Contains("lantern") || name.Contains("torch") || name.Contains("heater"))
+                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+                if (iFire == null)
                 {
                     return true;
                 }
@@ -65,15 +63,16 @@ namespace ImprovedFires.Patches
               public static void Postfix(HeatSource __instance)
             {
 
-                string name = __instance.gameObject.name.ToLowerInvariant();
-                if (name.Contains("candle") || name.Contains("flare") || name.Contains("lamp") || name.Contains("lantern") || name.Contains("torch") || name.Contains("heater"))
+                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+                if (iFire == null)
                 {
                     return;
                 }
                 else
                 {
-                    ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>();
                     __instance.m_TempIncrease = iFire.totalExternalFireTemperature;
+                    __instance.m_MaxTempIncreaseOuterRadius = iFire.outerRadius;
+                    __instance.m_MaxTempIncreaseInnerRadius = iFire.innerRadius;
                 }
 
             }
