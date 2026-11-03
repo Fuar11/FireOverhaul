@@ -35,12 +35,17 @@ namespace ImprovedFires.Patches
 
                 if (iFire == null)
                 {
+                    Main.Logger.Log("iFire is null when trying to add heat source.", ComplexLogger.FlaggedLoggingLevel.Error);
                     return;
                 }
+
+                GameManager.GetHeatSourceManagerComponent().AddHeatSource(__instance);
 
                 __instance.m_MaxTempIncrease = iFire.totalExternalFireTemperature; //this one might not matter
                 __instance.m_TempIncrease = iFire.totalExternalFireTemperature; //the current temp
                 __instance.m_StartingTemp = iFire.totalExternalFireTemperature; 
+
+                __instance.m_TurnedOn = true;
             }
         }
 
@@ -64,6 +69,7 @@ namespace ImprovedFires.Patches
             {
 
                 ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+
                 if (iFire == null)
                 {
                     return;

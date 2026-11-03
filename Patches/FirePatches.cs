@@ -130,7 +130,7 @@ namespace ImprovedFires.Patches
                 __instance.m_HeatSource.m_TempIncrease = iFire.totalExternalFireTemperature;
                 //__instance.m_FuelHeatIncrease = iFire.totalExternalFireTemperature;
                 __instance.m_HeatSource.m_MaxTempIncreaseInnerRadius = iFire.innerRadius; 
-                __instance.m_HeatSource.m_MaxTempIncreaseOuterRadius = iFire.outerRadius * __instance.GetFireOuterRadiusScale(); //maybe remove this
+                __instance.m_HeatSource.m_MaxTempIncreaseOuterRadius = iFire.outerRadius;
 
                 if (fuelItem.type == FuelType.Wood || fuelItem.type == FuelType.Synthetic)
                 {

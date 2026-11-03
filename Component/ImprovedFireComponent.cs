@@ -60,16 +60,8 @@ namespace ImprovedFires.Component
         public const float DWINDLE_ENTER = 300f,  DWINDLE_EXIT = 200f;
         public const float COALS_MIN = 150f;
 
-
         private bool extinguished = false;
         public bool changeFX = true;
-
-        //state fields
-        int burningCount;
-        int coalCount;
-        int emberCount;
-
-        float totalCombustion;
 
         public void Start() { }
 
@@ -199,7 +191,6 @@ namespace ImprovedFires.Component
 
         private void SetInnerAndOuterRadius()
         {
-
             float heatScale = totalExternalFireTemperature / MAX_RADIANT_HEAT;
             innerRadius = Mathf.Lerp(0.5f, 3f, heatScale);
             outerRadius = Mathf.Lerp(2f, 8f, heatScale);
