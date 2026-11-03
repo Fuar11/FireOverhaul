@@ -28,8 +28,11 @@ namespace ImprovedFires.Component
         public float ignitionTemp;         // Temperature at which combustion can commence
         public float coalsThreshold;       // Amount of total fuel consumption required for fuel to be burning as coals
         public float emberThreshold;       // Amount of total fuel consumption required for fuel to be burning as embers
-        public float baseBurnDuration;
+        public float baseBurnDuration; //this is irrelevant, can remove
         public float charcoalYield;
+
+        public float preheatEnergyRemaining;
+        public float heatDrainPower;
 
         //percentages of consumption
         public float burnAmount = 0f; //amount of fuel consumed before turning to coals or embers, 0 = full, 1 = fully consumed
@@ -37,11 +40,10 @@ namespace ImprovedFires.Component
         public float embersAmount = 0f;
 
         public float remainingEnergy;
-
         public float currentPowerOutput;
         public float ignitionProgress = 0f;
 
-
+        public const float HEAT_DRAIN_RATE = 0.2f;
 
         public FireFuelItem(string name, FuelType type, float baseDuration, float timeToIgniteAtTemp, float ignitionTemp, float maxPowerOutput, float energyContent, float coalsThreshold, float embersThreshold, float charcoalYield)
         {
@@ -57,6 +59,7 @@ namespace ImprovedFires.Component
             this.charcoalYield = charcoalYield;
 
             remainingEnergy = energyContent;
+            preheatEnergyRemaining = 0.02f * remainingEnergy;
 
             float coalsPowerFactor = 0f;
             float emberPowerFactor = 0f;
@@ -113,9 +116,17 @@ namespace ImprovedFires.Component
         public void UpdateStats(ImprovedFireComponent fire, bool extinguish, float gameDeltaTime)
         {
 
+            heatDrainPower = 0f;
+            if ((state == FireFuelItemState.Cold || state == FireFuelItemState.Heating) && preheatEnergyRemaining > 0f && gameDeltaTime > 0f)
+            {
+                float absorbtion = maxPowerOutput * HEAT_DRAIN_RATE * Mathf.Clamp01(fire.totalFireTemperature / ignitionTemp);
+                heatDrainPower = Mathf.Min(absorbtion, preheatEnergyRemaining / gameDeltaTime);
+                preheatEnergyRemaining -= heatDrainPower * gameDeltaTime;
+            }
+
             if (state == FireFuelItemState.Cold)
             {
-                ignitionProgress = 0f;
+                ignitionProgress = Mathf.Max(0f, ignitionProgress - gameDeltaTime / (timeToIgniteAtTemp * 60f)); //this ensures if it was previously lit the process isn't restarted completely
                 if (fire.totalFireTemperature >= ignitionTemp)
                 {
                     Main.Logger.Log($"Fire temp is hot enough to ignite fuel {name}", ComplexLogger.FlaggedLoggingLevel.Debug);

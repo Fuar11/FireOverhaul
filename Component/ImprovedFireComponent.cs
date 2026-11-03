@@ -90,7 +90,7 @@ namespace ImprovedFires.Component
             foreach (FireFuelItem fuel in fuelPool)
             {
                 fuel.UpdateStats(this, extinguished, gameDeltaTime);
-                totalPower += fuel.currentPowerOutput;
+                totalPower += fuel.currentPowerOutput - fuel.heatDrainPower;
                 totalRadiantPower += fuel.GetRadiantPower();
 
                 switch (fuel.state)
@@ -109,6 +109,8 @@ namespace ImprovedFires.Component
                         break;
                 }
             }
+
+            totalPower = Mathf.Max(totalPower, 0f);
 
             fuelPool.RemoveAll(f => f.state == Enums.FireFuelItemState.Ash);
 
