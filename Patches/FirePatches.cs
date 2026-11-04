@@ -218,7 +218,6 @@ namespace ImprovedFires.Patches
 
                 __instance.m_ElapsedOnTODSeconds = 0f;
                 __instance.m_ElapsedOnTODSecondsUnmodified = 0f;
-                //__instance.m_MaxOnTODSeconds = iFire.GetEstimatedFireDuration(); not needed since this is a one time set
 
             }
 

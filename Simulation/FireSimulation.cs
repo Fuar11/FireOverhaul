@@ -11,18 +11,15 @@ namespace ImprovedFires.Simulation
 
         public float totalExternalFireTemperature;
         public float totalFireTemperature;
-
         private float totalPower;
-
         private float totalRadiantPower;
-
         public float flamePower;
         public float coalsPower;
         public float emberPower;
 
-        private float heatingFuelCount;
+        private int unlitFuelCount; //amount of fuel not currently combusting
 
-        public float burnRateMult;
+        public float burnRateMult; //multiplier for burn rate of all fuel calculated based on the temperature
 
         public float innerRadius;
         public float outerRadius;
@@ -48,6 +45,8 @@ namespace ImprovedFires.Simulation
         public const float DWINDLE_ENTER = 300f, DWINDLE_EXIT = 200f;
         public const float COALS_MIN = 150f;
 
+        public const float HOT_CORE_MIN = 200f; //minimum temperature the fire can be before going out completely if no other fuel is combusting/embers and unburnt fuel is still on the fire
+
         //step
 
         public void Step(float dt)
@@ -59,7 +58,7 @@ namespace ImprovedFires.Simulation
             flamePower = 0;
             coalsPower = 0;
             emberPower = 0;
-            heatingFuelCount = 0;
+            unlitFuelCount = 0;
 
             burnRateMult = Mathf.Clamp(Mathf.Pow(totalFireTemperature / BASELINE_INTERNAL_TEMP, 0.4f), 0.5f, 1.5f);
 
@@ -81,7 +80,8 @@ namespace ImprovedFires.Simulation
                         emberPower += fuel.currentPowerOutput;
                         break;
                     case Enums.FireFuelItemState.Heating:
-                        heatingFuelCount++;
+                    case Enums.FireFuelItemState.Cold:
+                        unlitFuelCount++;
                         break;
                 }
             }
@@ -130,8 +130,10 @@ namespace ImprovedFires.Simulation
             bool wasSteadyOrGreater = state == FireState.Steady || wasRaging;
             bool wasFlaming = wasSteadyOrGreater || state == FireState.Dwindling;
 
+            
+
             if (flamePower >= RAGING_ENTER || (wasRaging && flamePower >= RAGING_EXIT))
-            return FireState.Raging;
+                return FireState.Raging;
 
             if (flamePower >= STEADY_ENTER || (wasSteadyOrGreater && flamePower >= STEADY_EXIT))
                 return FireState.Steady;
@@ -145,6 +147,10 @@ namespace ImprovedFires.Simulation
             if (coalsPower + emberPower > 0f)
                 return FireState.Embers;
 
+            if( unlitFuelCount > 0 && totalFireTemperature >= HOT_CORE_MIN)
+            {
+                return FireState.Embers;
+            }
 
             return fireState;
         }
