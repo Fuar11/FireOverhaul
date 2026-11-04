@@ -33,11 +33,11 @@ namespace ImprovedFires.Patches
 
                     string state = "";
 
-                    if (iFire.state == Enums.FireState.Embers) state = "Embers";
-                    else if (iFire.state == Enums.FireState.Coals) state = "Glowing Coals";
-                    else if (iFire.state == Enums.FireState.Dwindling) state = "Dwindling Fire";
-                    else if (iFire.state == Enums.FireState.Steady) state = "Steady Fire";
-                    else if (iFire.state == Enums.FireState.Raging) state = "Raging Fire";
+                    if (iFire.fireSim.state == Enums.FireState.Embers) state = "Embers";
+                    else if (iFire.fireSim.state == Enums.FireState.Coals) state = "Glowing Coals";
+                    else if (iFire.fireSim.state == Enums.FireState.Dwindling) state = "Dwindling Fire";
+                    else if (iFire.fireSim.state == Enums.FireState.Steady) state = "Steady Fire";
+                    else if (iFire.fireSim.state == Enums.FireState.Raging) state = "Raging Fire";
                     else state = "Unknown";
 
                     string[] values = new string[6];
@@ -48,11 +48,11 @@ namespace ImprovedFires.Patches
 
                     values[2] = "\n";
 
-                    values[3] = GetHeatIncreaseText(iFire.totalExternalFireTemperature, true, fire);
+                    values[3] = GetHeatIncreaseText(iFire.fireSim.totalExternalFireTemperature, true, fire);
 
                     values[4] = " - ";
 
-                    values[5] = GetHeatIncreaseText(iFire.totalFireTemperature, true, fire);
+                    values[5] = GetHeatIncreaseText(iFire.fireSim.totalFireTemperature, true, fire);
 
                     extraText = string.Concat(values);
                     

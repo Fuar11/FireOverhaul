@@ -41,9 +41,9 @@ namespace ImprovedFires.Patches
 
                 GameManager.GetHeatSourceManagerComponent().AddHeatSource(__instance);
 
-                __instance.m_MaxTempIncrease = iFire.totalExternalFireTemperature; //this one might not matter
-                __instance.m_TempIncrease = iFire.totalExternalFireTemperature; //the current temp
-                __instance.m_StartingTemp = iFire.totalExternalFireTemperature; 
+                __instance.m_MaxTempIncrease = iFire.fireSim.totalExternalFireTemperature; //this one might not matter
+                __instance.m_TempIncrease = iFire.fireSim.totalExternalFireTemperature; //the current temp
+                __instance.m_StartingTemp = iFire.fireSim.totalExternalFireTemperature; 
 
                 __instance.m_TurnedOn = true;
             }
@@ -76,9 +76,9 @@ namespace ImprovedFires.Patches
                 }
                 else
                 {
-                    __instance.m_TempIncrease = iFire.totalExternalFireTemperature;
-                    __instance.m_MaxTempIncreaseOuterRadius = iFire.outerRadius;
-                    __instance.m_MaxTempIncreaseInnerRadius = iFire.innerRadius;
+                    __instance.m_TempIncrease = iFire.fireSim.totalExternalFireTemperature;
+                    __instance.m_MaxTempIncreaseOuterRadius = iFire.fireSim.outerRadius;
+                    __instance.m_MaxTempIncreaseInnerRadius = iFire.fireSim.innerRadius;
                 }
 
             }

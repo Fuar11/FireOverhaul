@@ -1,4 +1,5 @@
 ﻿using Il2Cpp;
+using ImprovedFires.Simulation;
 using ImprovedFires.Utilities;
 using System;
 using System.Collections.Generic;
@@ -15,57 +16,19 @@ namespace ImprovedFires.Component
     public class ImprovedFireComponent : MonoBehaviour
     {
 
-        public FireState state;
+        public FireSimulation fireSim;
 
-        public List<FireFuelItem> fuelPool = new List<FireFuelItem>();
-
-        private float d_estimatedFireDurationSeconds;
-
-        public float totalExternalFireTemperature;
-        public float totalFireTemperature;
-
-        private float totalPower;
-
-        private float totalRadiantPower;
-
-        public float flamePower;
-        public float coalsPower;
-        public float emberPower;
-
-        private float heatingFuelCount;
-
-        public float burnRateMult;
-
-        public float innerRadius;
-        public float outerRadius;
-
-        //power
-        public const float BASELINE_POWER = 4500f; // watts
-        public const float BASELINE_INTERNAL_TEMP = 700f;  // degrees
-
-        //temperature control
-        public const float TEMP_HEAT_TIME_CONSTANT = 30f;  // game seconds
-        public const float TEMP_COOL_TIME_CONSTANT = 240f; // game seconds
-
-        public const float EXT_HEAT_TIME_CONSTANT = 60f;   // game seconds
-        public const float EXT_COOL_TIME_CONSTANT = 300f;  // game seconds
-
-        public const float MAX_RADIANT_HEAT = 80f;     // °C, vanilla max
-        public const float RADIANCE_POWER_SCALE = 3000f; // watts of radiant power
-
-        //state controls, in watts
-
-        public const float RAGING_ENTER = 9000f,  RAGING_EXIT = 7500f;
-        public const float STEADY_ENTER = 2500f,  STEADY_EXIT = 2000f;
-        public const float DWINDLE_ENTER = 300f,  DWINDLE_EXIT = 200f;
-        public const float COALS_MIN = 150f;
-
-        private bool extinguished = false;
         public bool changeFX = true;
 
+        private const float MAX_STEPS = 200f;
+        private const float  STEP_SIZE = 60F;
+        private float durationEstimate = 0f;
         public void Start() { }
 
-        public void Awake() { }
+        public void Awake()
+        {
+            fireSim = new FireSimulation();
+        }
 
         public void Update() 
         {
@@ -77,206 +40,51 @@ namespace ImprovedFires.Component
                 return;
             }
 
-            totalPower = 0;
-            totalRadiantPower = 0;
+            FireState oldState = fireSim.state;
 
-            flamePower = 0;
-            coalsPower = 0;
-            emberPower = 0;
-            heatingFuelCount = 0;
+            int i = 0;
+            float timeRemaining = gameDeltaTime;
+            float stepSize = Mathf.Max(STEP_SIZE, gameDeltaTime / MAX_STEPS);
 
-            burnRateMult = Mathf.Clamp(Mathf.Pow(totalFireTemperature / BASELINE_INTERNAL_TEMP, 0.4f), 0.5f, 1.5f);
-
-            foreach (FireFuelItem fuel in fuelPool)
+            while(timeRemaining > 0 && i < MAX_STEPS)
             {
-                fuel.UpdateStats(this, extinguished, gameDeltaTime);
-                totalPower += fuel.currentPowerOutput - fuel.heatDrainPower;
-                totalRadiantPower += fuel.GetRadiantPower();
-
-                switch (fuel.state)
-                {
-                    case Enums.FireFuelItemState.Burning:
-                        flamePower += fuel.currentPowerOutput;
-                        break;
-                    case Enums.FireFuelItemState.Coals:
-                        coalsPower += fuel.currentPowerOutput;
-                        break;
-                    case Enums.FireFuelItemState.Embers:
-                        emberPower += fuel.currentPowerOutput;
-                        break;
-                    case Enums.FireFuelItemState.Heating:
-                        heatingFuelCount++;
-                        break;
-                }
+                float dt = Mathf.Min(timeRemaining, stepSize); 
+                fireSim.Step(dt);
+                timeRemaining -= dt;
+                i++;
             }
 
-            totalPower = Mathf.Max(totalPower, 0f);
+            durationEstimate = Mathf.Max(0f, durationEstimate - gameDeltaTime);
 
-            fuelPool.RemoveAll(f => f.state == Enums.FireFuelItemState.Ash);
-
-            float targetTemp = CalculateTemperature();
-
-            float tau = targetTemp > totalFireTemperature
-                ? TEMP_HEAT_TIME_CONSTANT
-                : TEMP_COOL_TIME_CONSTANT;
-
-            float k = 1f - Mathf.Exp(-gameDeltaTime / tau);
-            totalFireTemperature = Mathf.Lerp(totalFireTemperature, targetTemp, k);
-
-            float targetTempExt = CalculateExternalTargetTemperature();
-
-            float extTau = targetTempExt > totalExternalFireTemperature
-                ? EXT_HEAT_TIME_CONSTANT
-                : EXT_COOL_TIME_CONSTANT;
-
-            float extK = 1f - Mathf.Exp(-gameDeltaTime / extTau);
-
-            totalExternalFireTemperature = Mathf.Lerp(totalExternalFireTemperature, targetTempExt, extK);
-
-            SetInnerAndOuterRadius();
-         
-            if(state != FireState.Starting && state != FireState.None)
-            {
-                FireState newState = SetState();
-                if(newState != state) changeFX = true;
-                state = newState;
-                //do more effects based on temp
-            }
-           
-
-            d_estimatedFireDurationSeconds = GetEstimatedFireDuration();
-
-        }
-
-        public void AddFuelItem(FireFuelItem item)
-        {
-            Main.Logger.Log($"Adding fuel item {item.name}", ComplexLogger.FlaggedLoggingLevel.Debug);
-            fuelPool.Add(item);   
-        }
-
-        public void RemoveFuelItem(FireFuelItem item)
-        {
-            Main.Logger.Log($"Removing fuel item {item.name}", ComplexLogger.FlaggedLoggingLevel.Debug);
-            fuelPool.Remove(item);
-        }
-
-        public int GetCharcoal()
-        {
-
-            float charcoalAmount = 0f;
-
-            foreach (FireFuelItem fuel in fuelPool)
-            {
-                charcoalAmount += fuel.GetCharcoalProduced();
+            if(fireSim.state != oldState){ 
+                changeFX = true;
+                RefreshDurationEstimate();
             }
 
-            return Mathf.CeilToInt(charcoalAmount / 0.1f);
 
         }
 
-        private float CalculateTemperature()
+        public float GetDurationEstimate() => durationEstimate;
+        public void RefreshDurationEstimate()
         {
-            if (totalPower <= 0)
-                return 20f; // ambient, maybe modify this by the air temp
-
-            float ratio = totalPower / BASELINE_POWER;
-
-            float temp = BASELINE_INTERNAL_TEMP * Mathf.Pow(ratio, 0.35f);
-
-            return Mathf.Clamp(temp, 20f, 1200f);
+            durationEstimate = EstimateUsefulBurnSeconds();
         }
-
-        public float CalculateExternalTargetTemperature()
+        private float EstimateUsefulBurnSeconds()
         {
-            return MAX_RADIANT_HEAT * (1f - Mathf.Exp(-totalRadiantPower / RADIANCE_POWER_SCALE));
-        }
+                    
+            FireSimulation clone = fireSim.Clone();
 
-        private void SetInnerAndOuterRadius()
-        {
-            float heatScale = totalExternalFireTemperature / MAX_RADIANT_HEAT;
-            innerRadius = Mathf.Lerp(0.5f, 3f, heatScale);
-            outerRadius = Mathf.Lerp(2f, 8f, heatScale);
-        }
-
-
-        public float GetEstimatedFireDuration() //this needs MAJOR changes
-        {
-            float longestDuration = 0f;
-
-            foreach (var fuel in fuelPool)
+            float t = 0;
+            while(clone.state > FireState.Embers && t < 43200) //if clone fire still isn't at embers in 12 in game hours, calculate how many seconds it's been running for
             {
-                float duration = fuel.CalculateEstimatedRemainingDurationInSeconds(this);
-
-                if (duration > longestDuration)
-                    longestDuration = duration;
+                clone.Step(STEP_SIZE);
+                t += STEP_SIZE;
             }
 
-            return longestDuration;
+            return t;
         }
 
-        public void BlowOnFire()
-        {
-            if (totalFireTemperature <= 200f) //these are testing values
-            {
-                totalFireTemperature *= 4f;
-            }
-            else totalFireTemperature /= 20f;
-        }
-
-        public bool CanTakeTorch()
-        {
-            foreach (FireFuelItem fuel in fuelPool)
-            {
-                if(fuel.type == Enums.FuelType.Stick || fuel.name == "Reclaimed Wood" && fuel.burnAmount <= 0.3f)
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        public void TakeTorch()
-        {
-            Main.Logger.Log("Attempting to take torch.", ComplexLogger.FlaggedLoggingLevel.Debug);
-
-            foreach (FireFuelItem fuel in fuelPool)
-            {
-                if(fuel.type == Enums.FuelType.Stick || fuel.name == "Reclaimed Wood" && fuel.burnAmount <= 0.3f)
-                {
-                    RemoveFuelItem(fuel);
-                    return;
-                }
-            }
-        }
-
-        private FireState SetState() //really shitty state manager
-        {
-
-            FireState fireState = FireState.None;
-
-            bool wasRaging = state == FireState.Raging;
-            bool wasSteadyOrGreater = state == FireState.Steady || wasRaging;
-            bool wasFlaming = wasSteadyOrGreater || state == FireState.Dwindling;
-
-            if (flamePower >= RAGING_ENTER || (wasRaging && flamePower >= RAGING_EXIT))
-            return FireState.Raging;
-
-            if (flamePower >= STEADY_ENTER || (wasSteadyOrGreater && flamePower >= STEADY_EXIT))
-                return FireState.Steady;
-
-            if (flamePower >= DWINDLE_ENTER || (wasFlaming && flamePower >= DWINDLE_EXIT))
-                return FireState.Dwindling;
-
-            if (coalsPower >= COALS_MIN)
-                return FireState.Coals;
-
-            if (coalsPower + emberPower > 0f)
-                return FireState.Embers;
-
-
-            return fireState;
-        }
+       
 
     }
 }

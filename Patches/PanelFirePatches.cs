@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ImprovedFires.Component;
+using ImprovedFires.Simulation;
 
 namespace ImprovedFires.Patches
 {
@@ -54,13 +55,13 @@ namespace ImprovedFires.Patches
 
                 float target;
 
-                switch (iFire.state)
+                switch (iFire.fireSim.state)
                 {
-                    case Enums.FireState.Embers:    target = Band(0.02f, 0.10f, iFire.emberPower,   0f,           300f); break;
-                    case Enums.FireState.Coals:     target = Band(0.10f, 0.25f, iFire.coalsPower, ImprovedFireComponent.COALS_MIN,    2000f); break;
-                    case Enums.FireState.Dwindling: target = Band(0.25f, 0.50f, iFire.flamePower, ImprovedFireComponent.DWINDLE_ENTER, ImprovedFireComponent.STEADY_ENTER); break;
-                    case Enums.FireState.Steady:    target = Band(0.50f, 0.85f, iFire.flamePower, ImprovedFireComponent.STEADY_ENTER,  ImprovedFireComponent.RAGING_ENTER); break;
-                    case Enums.FireState.Raging:    target = Band(0.85f, 1.00f, iFire.flamePower, ImprovedFireComponent.RAGING_ENTER,  18000f); break;
+                    case Enums.FireState.Embers:    target = Band(0.02f, 0.10f, iFire.fireSim.emberPower,   0f,           300f); break;
+                    case Enums.FireState.Coals:     target = Band(0.10f, 0.25f, iFire.fireSim.coalsPower, FireSimulation.COALS_MIN,    2000f); break;
+                    case Enums.FireState.Dwindling: target = Band(0.25f, 0.50f, iFire.fireSim.flamePower, FireSimulation.DWINDLE_ENTER, FireSimulation.STEADY_ENTER); break;
+                    case Enums.FireState.Steady:    target = Band(0.50f, 0.85f, iFire.fireSim.flamePower, FireSimulation.STEADY_ENTER,  FireSimulation.RAGING_ENTER); break;
+                    case Enums.FireState.Raging:    target = Band(0.85f, 1.00f, iFire.fireSim.flamePower, FireSimulation.RAGING_ENTER,  18000f); break;
                     default:   target = 0f; break;
                 }
     

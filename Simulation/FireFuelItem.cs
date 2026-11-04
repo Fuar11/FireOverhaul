@@ -1,4 +1,6 @@
-﻿using ImprovedFires.Enums;
+﻿using ImprovedFires.Component;
+using ImprovedFires.Enums;
+using ImprovedFires.Simulation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static ComplexLogger.Utilities.ConversionUtilities;
 
-namespace ImprovedFires.Component
+namespace ImprovedFires.Simulation
 {
     public class FireFuelItem
     {
@@ -113,13 +115,13 @@ namespace ImprovedFires.Component
         }
 
     
-        public void UpdateStats(ImprovedFireComponent fire, bool extinguish, float gameDeltaTime)
+        public void UpdateStats(FireSimulation fireSim, bool extinguish, float gameDeltaTime)
         {
 
             heatDrainPower = 0f;
             if ((state == FireFuelItemState.Cold || state == FireFuelItemState.Heating) && preheatEnergyRemaining > 0f && gameDeltaTime > 0f)
             {
-                float absorbtion = maxPowerOutput * HEAT_DRAIN_RATE * Mathf.Clamp01(fire.totalFireTemperature / ignitionTemp);
+                float absorbtion = maxPowerOutput * HEAT_DRAIN_RATE * Mathf.Clamp01(fireSim.totalFireTemperature / ignitionTemp);
                 heatDrainPower = Mathf.Min(absorbtion, preheatEnergyRemaining / gameDeltaTime);
                 preheatEnergyRemaining -= heatDrainPower * gameDeltaTime;
             }
@@ -127,18 +129,18 @@ namespace ImprovedFires.Component
             if (state == FireFuelItemState.Cold)
             {
                 ignitionProgress = Mathf.Max(0f, ignitionProgress - gameDeltaTime / (timeToIgniteAtTemp * 60f)); //this ensures if it was previously lit the process isn't restarted completely
-                if (fire.totalFireTemperature >= ignitionTemp)
+                if (fireSim.totalFireTemperature >= ignitionTemp)
                 {
-                    Main.Logger.Log($"Fire temp is hot enough to ignite fuel {name}", ComplexLogger.FlaggedLoggingLevel.Debug);
+                    //Main.Logger.Log($"Fire temp is hot enough to ignite fuel {name}", ComplexLogger.FlaggedLoggingLevel.Debug);
                     state = FireFuelItemState.Heating;
                 }
             }
             else if (state == FireFuelItemState.Heating)
             {
 
-                if (fire.totalFireTemperature < ignitionTemp || extinguish) state = FireFuelItemState.Cold;
+                if (fireSim.totalFireTemperature < ignitionTemp || extinguish) state = FireFuelItemState.Cold;
 
-                float excessTemp = fire.totalFireTemperature - ignitionTemp;
+                float excessTemp = fireSim.totalFireTemperature - ignitionTemp;
 
                 float heatingRatio = Mathf.Clamp(
                     1f + excessTemp / 500f,
@@ -157,13 +159,13 @@ namespace ImprovedFires.Component
             }
             else if (state == FireFuelItemState.Burning)
             {
-                currentPowerOutput = maxPowerOutput * CalculateCombustionCurve() * fire.burnRateMult;
+                currentPowerOutput = maxPowerOutput * CalculateCombustionCurve() * fireSim.burnRateMult;
 
                 if (burnAmount >= coalsThreshold) state = FireFuelItemState.Coals;
             }
             else if(state == FireFuelItemState.Coals)
             {
-                currentPowerOutput = coalsPowerOutput * CalculateSlowDecayCurve() * fire.burnRateMult;
+                currentPowerOutput = coalsPowerOutput * CalculateSlowDecayCurve() * fireSim.burnRateMult;
 
                 if (burnAmount >= emberThreshold) state = FireFuelItemState.Embers;
             }
@@ -176,7 +178,7 @@ namespace ImprovedFires.Component
                     return;
                 }
 
-                currentPowerOutput = emberPowerOutput * CalculateEmberCurve() * fire.burnRateMult;
+                currentPowerOutput = emberPowerOutput * CalculateEmberCurve() * fireSim.burnRateMult;
                 //Main.Logger.Log($"Fuel {name} embers power output is {currentPowerOutput}", ComplexLogger.FlaggedLoggingLevel.Debug);
 
                 if (remainingEnergy <= energyContent * 0.01f)
@@ -294,18 +296,18 @@ namespace ImprovedFires.Component
             }
         }
 
-        public float CalculateEstimatedRemainingDurationInSeconds(ImprovedFireComponent fire)
-        {
-            return remainingEnergy / currentPowerOutput;
-        }
-
         public void ReduceToAsh()
         {
-            Main.Logger.Log("Reducing energy of fuel to 0.", ComplexLogger.FlaggedLoggingLevel.Debug);
+            //Main.Logger.Log("Reducing energy of fuel to 0.", ComplexLogger.FlaggedLoggingLevel.Debug);
             remainingEnergy = 0f;
             currentPowerOutput = 0f;
             state = FireFuelItemState.Ash;
         }
+
+        //sim
+
+        public FireFuelItem Clone() => (FireFuelItem)this.MemberwiseClone();
+
 
     }
 }
