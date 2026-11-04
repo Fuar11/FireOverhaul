@@ -70,10 +70,6 @@ namespace ImprovedFires.Patches
                 //__instance.MaybeBlowOutFromWind(); this needs a patch
                 __instance.UpdateFireAudio();
 
-                if(iFire.fireSim.state > 0 && __instance.GetFireState() == Il2Cpp.FireState.Off)
-                {
-                }
-
                 //NEEDS FIXING. FIRES DONT GIVE ANY LIGHT CURRENTLY
 
                 if (iFire.fireSim.state == Enums.FireState.Raging && iFire.changeFX)

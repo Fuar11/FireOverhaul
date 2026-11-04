@@ -25,7 +25,7 @@ namespace ImprovedFires.Simulation
         public float outerRadius;
 
         //power
-        public const float BASELINE_POWER = 4500f; // watts
+        public const float BASELINE_POWER = 10000f; // watts
         public const float BASELINE_INTERNAL_TEMP = 700f;  // degrees
 
         //temperature control
