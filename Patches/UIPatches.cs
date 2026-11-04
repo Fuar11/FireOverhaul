@@ -40,7 +40,9 @@ namespace ImprovedFires.Patches
                     else if (iFire.fireSim.state == Enums.FireState.Raging) state = "Raging Fire";
                     else state = "Unknown";
 
-                    string[] values = new string[6];
+                    string[] values = new string[8];
+
+                    bool displayDuration = iFire.GetDurationEstimate() >= 60f;
 
                     values[0] = " (";
 
@@ -48,11 +50,15 @@ namespace ImprovedFires.Patches
 
                     values[2] = "\n";
 
-                    values[3] = GetHeatIncreaseText(iFire.fireSim.totalExternalFireTemperature, true, fire);
+                    values[3] = displayDuration ? Il2Cpp.Utils.GetDurationString((int)iFire.GetDurationEstimate() / 60) : "";
 
-                    values[4] = " - ";
+                    values[4] = displayDuration ? "\n" : "";
 
-                    values[5] = GetHeatIncreaseText(iFire.fireSim.totalFireTemperature, true, fire);
+                    values[5] = GetHeatIncreaseText(iFire.fireSim.totalExternalFireTemperature, true, fire);
+
+                    values[6] = " - ";
+
+                    values[7] = GetHeatIncreaseText(iFire.fireSim.totalFireTemperature, true, fire);
 
                     extraText = string.Concat(values);
                     

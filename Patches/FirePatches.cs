@@ -275,13 +275,17 @@ namespace ImprovedFires.Patches
 
                 if (iFire.fireSim.state > Enums.FireState.Embers)
                 {
-                    __result = iFire.GetDurationEstimate();
-                    return;
+                    float num = iFire.GetDurationEstimate();
+                    __instance.m_ElapsedOnTODSeconds = num;
+                    __result = num;
                 }
                 else
                 {
                     __result = 0f;
                 }
+
+
+                //Main.Logger.Log($"Remaining lifetime seconds: {__result}", ComplexLogger.FlaggedLoggingLevel.Debug);
             }
 
         }

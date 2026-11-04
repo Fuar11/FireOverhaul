@@ -32,8 +32,8 @@ namespace ImprovedFires.Patches
         }
 
 
-        [HarmonyPatch(typeof(Panel_FeedFire), "Update")]
-		internal class Panel_FeedFire_Prefix
+        [HarmonyPatch(typeof(Panel_FeedFire), nameof(Panel_FeedFire.Update))]
+		internal class Panel_FeedFire_Update
 		{
 
             static float fill;
@@ -51,6 +51,7 @@ namespace ImprovedFires.Patches
                 if (iFire == null)
                 {
                     Main.Logger.Log("ImprovedFireComponent is null, cannot get fire fill amount", ComplexLogger.FlaggedLoggingLevel.Error);
+                    return;
                 }
 
                 float target;
@@ -75,5 +76,38 @@ namespace ImprovedFires.Patches
             }
 
 		}
+
+        [HarmonyPatch(typeof(Panel_FeedFire), nameof(Panel_FeedFire.RefreshFireDurationLabel))]
+
+        internal class FireDurationLabelTest
+        {
+            
+            public static void Postfix(Panel_FeedFire __instance)
+            {
+                
+                ImprovedFireComponent iFire = __instance.m_FireplaceInteraction.Fire.gameObject.GetComponent<ImprovedFireComponent>();
+
+                float num = iFire.GetDurationEstimate() / 60f;
+
+                if(iFire.fireSim.state == Enums.FireState.Embers)
+                {
+                    __instance.m_Label_EstimatedFireDuration.text = Localization.Get("GAMEPLAY_Embers");
+                    return;
+                }
+
+                int durationMinutes = Mathf.FloorToInt(num);
+
+                if (num < 1f)
+                {
+                    durationMinutes = Mathf.CeilToInt(num);
+                }
+
+                string durationString = Il2Cpp.Utils.GetDurationString(durationMinutes);
+		        __instance.m_Label_EstimatedFireDuration.text = durationString;
+            }
+
+        }
+
+
     }
 }
