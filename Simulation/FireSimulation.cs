@@ -1,3 +1,4 @@
+using ImprovedFires.Enums;
 using FireState = ImprovedFires.Enums.FireState;
 
 namespace ImprovedFires.Simulation
@@ -11,7 +12,7 @@ namespace ImprovedFires.Simulation
 
         public float totalExternalFireTemperature;
         public float totalFireTemperature;
-        private float totalPower;
+        private float corePower;
         private float totalRadiantPower;
         public float flamePower;
         public float coalsPower;
@@ -52,7 +53,7 @@ namespace ImprovedFires.Simulation
         public void Step(float dt)
         {
             
-            totalPower = 0;
+            corePower = 0;
             totalRadiantPower = 0;
 
             flamePower = 0;
@@ -65,7 +66,10 @@ namespace ImprovedFires.Simulation
             foreach (FireFuelItem fuel in fuelPool)
             {
                 fuel.UpdateStats(this, false, dt);
-                totalPower += fuel.currentPowerOutput - fuel.heatDrainPower;
+
+                int coalsWeight = fuel.state == FireFuelItemState.Coals ? fuel.coalsWeightFactor : 1;
+
+                corePower += (fuel.currentPowerOutput * coalsWeight) - fuel.heatDrainPower;
                 totalRadiantPower += fuel.GetRadiantPower();
 
                 switch (fuel.state)
@@ -86,7 +90,7 @@ namespace ImprovedFires.Simulation
                 }
             }
 
-            totalPower = Mathf.Max(totalPower, 0f);
+            corePower = Mathf.Max(corePower, 0f);
 
             fuelPool.RemoveAll(f => f.state == Enums.FireFuelItemState.Ash);
 
@@ -172,10 +176,10 @@ namespace ImprovedFires.Simulation
         //temperature methods
         private float CalculateTemperature()
         {
-            if (totalPower <= 0)
+            if (corePower <= 0)
                 return 20f; // ambient, maybe modify this by the air temp
 
-            float ratio = totalPower / BASELINE_POWER;
+            float ratio = corePower / BASELINE_POWER;
 
             float temp = BASELINE_INTERNAL_TEMP * Mathf.Pow(ratio, 0.35f);
 

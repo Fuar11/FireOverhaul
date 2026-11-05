@@ -19,31 +19,35 @@ namespace ImprovedFires.Simulation
         public FuelType type = FuelType.None;
 
         //definition
-        public float energyContent;        // Total energy stored in joules
-        public float maxPowerOutput;       // Maximum watts when burning at optimal rate
-        public float coalsPowerOutput;     // Maximum watts when burning residual carbon
-        public float emberPowerOutput;     // Remaining watts when emitting lasting ambient heat
-        public float burningRadiantFraction;
+        public float energyContent;        // Total energy stored, in joules
+        public float remainingEnergy;      // Current energy stored, in joules
+        public float maxPowerOutput;       // Maximum wattage output
+        public float coalsPowerOutput;     // Maximum wattage output when burning residual carbon
+        public float emberPowerOutput;     // Remaining wattage output when emitting lasting ambient heat
+        public float currentPowerOutput;   // Current wattage output
+        public float burningRadiantFraction; // Portion of energy output into radiant heat felt by the player
         public float coalsRadiantFraction;
         public float embersRadiantFraction;
-        public float timeToIgniteAtTemp;   //0 = instant ignite
+        public float timeToIgniteAtTemp;   // Time to ignite at ignition temperature in minutes
         public float minIgnitionTemp;      // Minimum temperature at which combustion can commence
         public float ignitionTemp;         // Optimal temperature at which combustion can commence
         public float coalsThreshold;       // Amount of total fuel consumption required for fuel to be burning as coals
         public float emberThreshold;       // Amount of total fuel consumption required for fuel to be burning as embers
         public float charcoalYield;
 
+        //ignition and fueling
         public float preheatEnergyRemaining;
         public float heatDrainPower;
+        public float ignitionProgress = 0f;
 
         //percentages of consumption
         public float burnAmount = 0f; //amount of fuel consumed before turning to coals or embers, 0 = full, 1 = fully consumed
         public float coalsAmount = 0f; //amount of fuel consumed when it is coals (a fraction of the total fuel)
         public float embersAmount = 0f;
 
-        public float remainingEnergy;
-        public float currentPowerOutput;
-        public float ignitionProgress = 0f;
+        //weighing
+
+        public int coalsWeightFactor;
 
         public const float HEAT_DRAIN_RATE = 0.2f;
         public const float IGNITION_RANGE_FACTOR = 0.85f;
@@ -73,6 +77,7 @@ namespace ImprovedFires.Simulation
             {
                 coalsPowerFactor = 0.2f;
                 emberPowerFactor = 0.095f;
+                coalsWeightFactor = 4;
                 burningRadiantFraction = 0.25f;
                 coalsRadiantFraction = 0.65f;
                 embersRadiantFraction = 0.45f;
@@ -81,6 +86,7 @@ namespace ImprovedFires.Simulation
             {
                 coalsPowerFactor = 0.07f;
                 emberPowerFactor = 0.02f;
+                coalsWeightFactor = 4;
                 burningRadiantFraction = 0.2f;
                 coalsRadiantFraction = 0.6f;
                 embersRadiantFraction = 0.4f;
@@ -89,6 +95,7 @@ namespace ImprovedFires.Simulation
             {
                 coalsPowerFactor = 0.85f;
                 emberPowerFactor = 0.3f;
+                coalsWeightFactor = 1;
                 burningRadiantFraction = 0.45f;
                 coalsRadiantFraction = 0.75f;
                 embersRadiantFraction = 0.5f;
@@ -97,6 +104,7 @@ namespace ImprovedFires.Simulation
             {
                 coalsPowerFactor = 0.01f;
                 emberPowerFactor = 0.001f;
+                coalsWeightFactor = 4;
                 burningRadiantFraction = 0.15f;
                 coalsRadiantFraction = 0.4f;
                 embersRadiantFraction = 0.3f;
@@ -105,6 +113,7 @@ namespace ImprovedFires.Simulation
             {
                 coalsPowerFactor = 0.15f;
                 emberPowerFactor = 0.095f;
+                coalsWeightFactor = 4;
                 burningRadiantFraction = 0.3f;
                 coalsRadiantFraction = 0.65f;
                 embersRadiantFraction = 0.45f;
