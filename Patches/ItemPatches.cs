@@ -46,6 +46,18 @@ namespace ImprovedFires.Patches
             }
         }
 
+        [HarmonyPatch(typeof(Skill_Firestarting), nameof(Skill_Firestarting.TinderRequired))]
+
+        internal class DontUseTinderAsTinder
+        {
+            
+            private static void Postfix(ref bool __result){
+                __result = false;
+            }
+
+        }
+
+      
 
     }
 }

@@ -164,6 +164,8 @@ namespace ImprovedFires.Patches
             {
                 ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
 
+                Main.Logger.Log($"Exit fire starting, fire success is {success}", ComplexLogger.FlaggedLoggingLevel.Debug);
+
                 if (success)
                 {
                     GearItem fi = __instance.m_FuelUsedToStart.gameObject.GetComponent<GearItem>();
@@ -172,7 +174,17 @@ namespace ImprovedFires.Patches
                         Main.Logger.Log("Fuel source item is null!", ComplexLogger.FlaggedLoggingLevel.Error);
                         return;
                     }
+
+                    Main.Logger.Log($"Started fire using {fi.name}", ComplexLogger.FlaggedLoggingLevel.Debug);
+
                     FireFuelItem fuelItem = Utilities.FuelItems.GetFuelItemInstance(fi.name);
+
+                    if(fuelItem == null)
+                    {
+                        Main.Logger.Log($"Cannot find fuel item profile using {fi.name}", ComplexLogger.FlaggedLoggingLevel.Error);
+                        return;
+                    }
+
                     fuelItem.gearItemRef = fi;
                     fuelItem.burnAmount += 0.01f; //a little push
                     fuelItem.state = FireFuelItemState.Burning;
@@ -186,7 +198,8 @@ namespace ImprovedFires.Patches
                 }
                 else
                 {
-                    Main.Logger.Log("Failed to start fire, setting state back to none.", ComplexLogger.FlaggedLoggingLevel.Debug);
+                    if(__instance.m_FuelUsedToStart != null) GameManager.GetPlayerManagerComponent().ConsumeUnitFromInventory(__instance.m_FuelUsedToStart.gameObject);
+                    Main.Logger.Log("Failed to start fire.", ComplexLogger.FlaggedLoggingLevel.Debug);
                     iFire.fireSim.state = Enums.FireState.None;
                 }
             }

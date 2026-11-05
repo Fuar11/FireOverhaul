@@ -27,8 +27,29 @@ namespace ImprovedFires.Patches
         {
             public static void Postfix(ref FuelSourceItem __result, ref Panel_FireStart __instance)
             {
-                __result = __instance.GetSelectedFuelSource();
+                __result = null;
             }
+        }
+
+        [HarmonyPatch(typeof(Panel_FireStart), nameof(Panel_FireStart.Enable))]
+
+        internal class Panel_FireStart_HideTinderOption
+        {
+            
+            private static void Postfix(Panel_FireStart __instance)
+            {
+                
+                //Vector3 pos = __instance.m_SelectTinder.gameObject.transform.position;
+
+                __instance.m_SelectTinder.gameObject.SetActive(false);
+
+                string tinder = __instance.m_SelectTinder.m_LabelName.text;
+
+                __instance.m_SelectFuel.m_LabelName.text = tinder;
+
+
+            }
+
         }
 
 
@@ -107,7 +128,5 @@ namespace ImprovedFires.Patches
             }
 
         }
-
-
     }
 }
