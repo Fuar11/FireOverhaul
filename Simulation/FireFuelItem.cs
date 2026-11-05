@@ -27,7 +27,8 @@ namespace ImprovedFires.Simulation
         public float coalsRadiantFraction;
         public float embersRadiantFraction;
         public float timeToIgniteAtTemp;   //0 = instant ignite
-        public float ignitionTemp;         // Temperature at which combustion can commence
+        public float minIgnitionTemp;      // Minimum temperature at which combustion can commence
+        public float ignitionTemp;         // Optimal temperature at which combustion can commence
         public float coalsThreshold;       // Amount of total fuel consumption required for fuel to be burning as coals
         public float emberThreshold;       // Amount of total fuel consumption required for fuel to be burning as embers
         public float baseBurnDuration; //this is irrelevant, can remove
@@ -46,6 +47,8 @@ namespace ImprovedFires.Simulation
         public float ignitionProgress = 0f;
 
         public const float HEAT_DRAIN_RATE = 0.2f;
+        public const float IGNITION_RANGE_FACTOR = 0.85f;
+        public const float MIN_IGNITION_SPEED = 0.25f;
 
         public FireFuelItem(string name, FuelType type, float baseDuration, float timeToIgniteAtTemp, float ignitionTemp, float maxPowerOutput, float energyContent, float coalsThreshold, float embersThreshold, float charcoalYield)
         {
@@ -60,6 +63,8 @@ namespace ImprovedFires.Simulation
             this.emberThreshold = embersThreshold;
             this.charcoalYield = charcoalYield;
 
+            this.minIgnitionTemp = ignitionTemp * IGNITION_RANGE_FACTOR;
+
             remainingEnergy = energyContent;
             preheatEnergyRemaining = 0.02f * remainingEnergy;
 
@@ -71,7 +76,7 @@ namespace ImprovedFires.Simulation
                 coalsPowerFactor = 0.2f;
                 emberPowerFactor = 0.095f;
                 burningRadiantFraction = 0.25f;
-                coalsRadiantFraction = 0.45f;
+                coalsRadiantFraction = 0.65f;
                 embersRadiantFraction = 0.45f;
             }
             else if (type == FuelType.Stick)
@@ -79,7 +84,7 @@ namespace ImprovedFires.Simulation
                 coalsPowerFactor = 0.07f;
                 emberPowerFactor = 0.02f;
                 burningRadiantFraction = 0.2f;
-                coalsRadiantFraction = 0.4f;
+                coalsRadiantFraction = 0.6f;
                 embersRadiantFraction = 0.4f;
             }
             else if(type == FuelType.Coal)
@@ -87,7 +92,7 @@ namespace ImprovedFires.Simulation
                 coalsPowerFactor = 0.85f;
                 emberPowerFactor = 0.3f;
                 burningRadiantFraction = 0.45f;
-                coalsRadiantFraction = 0.5f;
+                coalsRadiantFraction = 0.75f;
                 embersRadiantFraction = 0.5f;
             }
             else if (type == FuelType.Paper)
@@ -95,15 +100,15 @@ namespace ImprovedFires.Simulation
                 coalsPowerFactor = 0.01f;
                 emberPowerFactor = 0.001f;
                 burningRadiantFraction = 0.15f;
-                coalsRadiantFraction = 0.3f;
+                coalsRadiantFraction = 0.4f;
                 embersRadiantFraction = 0.3f;
             }
             else if (type == FuelType.Synthetic)
             {
-                coalsPowerFactor = 0.45f;
+                coalsPowerFactor = 0.15f;
                 emberPowerFactor = 0.095f;
                 burningRadiantFraction = 0.3f;
-                coalsRadiantFraction = 0.45f;
+                coalsRadiantFraction = 0.65f;
                 embersRadiantFraction = 0.45f;
             }
 
@@ -118,6 +123,10 @@ namespace ImprovedFires.Simulation
         public void UpdateStats(FireSimulation fireSim, bool extinguish, float gameDeltaTime)
         {
 
+            float ignitionRangePosition = Mathf.InverseLerp(minIgnitionTemp, ignitionTemp, fireSim.totalFireTemperature);
+            float speed = Mathf.Lerp(MIN_IGNITION_SPEED, 1, ignitionRangePosition);
+            float timeToIgniteActual = timeToIgniteAtTemp / speed;
+
             heatDrainPower = 0f;
             if ((state == FireFuelItemState.Cold || state == FireFuelItemState.Heating) && preheatEnergyRemaining > 0f && gameDeltaTime > 0f)
             {
@@ -128,8 +137,9 @@ namespace ImprovedFires.Simulation
 
             if (state == FireFuelItemState.Cold)
             {
+
                 ignitionProgress = Mathf.Max(0f, ignitionProgress - gameDeltaTime / (timeToIgniteAtTemp * 60f)); //this ensures if it was previously lit the process isn't restarted completely
-                if (fireSim.totalFireTemperature >= ignitionTemp)
+                if (fireSim.totalFireTemperature >= minIgnitionTemp)
                 {
                     //Main.Logger.Log($"Fire temp is hot enough to ignite fuel {name}", ComplexLogger.FlaggedLoggingLevel.Debug);
                     state = FireFuelItemState.Heating;
@@ -138,7 +148,7 @@ namespace ImprovedFires.Simulation
             else if (state == FireFuelItemState.Heating)
             {
 
-                if (fireSim.totalFireTemperature < ignitionTemp || extinguish) state = FireFuelItemState.Cold;
+                if (fireSim.totalFireTemperature < minIgnitionTemp || extinguish) state = FireFuelItemState.Cold;
 
                 float excessTemp = fireSim.totalFireTemperature - ignitionTemp;
 
@@ -147,7 +157,7 @@ namespace ImprovedFires.Simulation
                     1f,
                     2f
                 );
-                float ignitionDuration = (timeToIgniteAtTemp * 60f)  / heatingRatio;
+                float ignitionDuration = (timeToIgniteActual * 60f)  / heatingRatio;
 
                 ignitionProgress += gameDeltaTime / ignitionDuration;
                 if (ignitionProgress >= 1f)

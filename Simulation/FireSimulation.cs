@@ -92,20 +92,20 @@ namespace ImprovedFires.Simulation
 
             float targetTemp = CalculateTemperature();
 
-            float tau = targetTemp > totalFireTemperature
+            float timeConstant = targetTemp > totalFireTemperature
                 ? TEMP_HEAT_TIME_CONSTANT
                 : TEMP_COOL_TIME_CONSTANT;
 
-            float k = 1f - Mathf.Exp(-dt / tau);
+            float k = 1f - Mathf.Exp(-dt / timeConstant);
             totalFireTemperature = Mathf.Lerp(totalFireTemperature, targetTemp, k);
 
             float targetTempExt = CalculateExternalTargetTemperature();
 
-            float extTau = targetTempExt > totalExternalFireTemperature
+            float externalTimeConstant = targetTempExt > totalExternalFireTemperature
                 ? EXT_HEAT_TIME_CONSTANT
                 : EXT_COOL_TIME_CONSTANT;
 
-            float extK = 1f - Mathf.Exp(-dt / extTau);
+            float extK = 1f - Mathf.Exp(-dt / externalTimeConstant);
 
             totalExternalFireTemperature = Mathf.Lerp(totalExternalFireTemperature, targetTempExt, extK);
 
