@@ -31,7 +31,6 @@ namespace ImprovedFires.Simulation
         public float ignitionTemp;         // Optimal temperature at which combustion can commence
         public float coalsThreshold;       // Amount of total fuel consumption required for fuel to be burning as coals
         public float emberThreshold;       // Amount of total fuel consumption required for fuel to be burning as embers
-        public float baseBurnDuration; //this is irrelevant, can remove
         public float charcoalYield;
 
         public float preheatEnergyRemaining;
@@ -50,11 +49,10 @@ namespace ImprovedFires.Simulation
         public const float IGNITION_RANGE_FACTOR = 0.85f;
         public const float MIN_IGNITION_SPEED = 0.25f;
 
-        public FireFuelItem(string name, FuelType type, float baseDuration, float timeToIgniteAtTemp, float ignitionTemp, float maxPowerOutput, float energyContent, float coalsThreshold, float embersThreshold, float charcoalYield)
+        public FireFuelItem(string name, FuelType type, float timeToIgniteAtTemp, float ignitionTemp, float maxPowerOutput, float energyContent, float coalsThreshold, float embersThreshold, float charcoalYield)
         {
             this.name = name;
             this.type = type;
-            this.baseBurnDuration = baseDuration; //this isn't really used right now, duration is determined by current remaining energy/burn amount, which is determined by the combustion curve, as well as current burn rate
             this.timeToIgniteAtTemp = timeToIgniteAtTemp;
             this.ignitionTemp = ignitionTemp;
             this.maxPowerOutput = maxPowerOutput;
