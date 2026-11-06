@@ -6,6 +6,7 @@ namespace ImprovedFires.Simulation
     public class FireSimulation
     {
 
+        public FireType type;
         public FireState state;
 
         public List<FireFuelItem> fuelPool = new List<FireFuelItem>();
@@ -25,7 +26,11 @@ namespace ImprovedFires.Simulation
         public float innerRadius;
         public float outerRadius;
 
-        public float airflow;
+        public float airflowControl = 1f;
+
+        public float airflowMin = 0.25f;
+        public float airflow => Mathf.Lerp(airflowMin, 1f, airflowControl);
+
 
         //power
         public const float BASELINE_POWER = 10000f; // watts
@@ -49,6 +54,14 @@ namespace ImprovedFires.Simulation
         public const float COALS_MIN = 150f;
 
         public const float HOT_CORE_MIN = 200f; //minimum temperature the fire can be before going out completely if no other fuel is combusting/embers and unburnt fuel is still on the fire
+
+        public FireSimulation(FireType type)
+        {
+            
+            this.type = type;
+            SetAirflowMinimum();
+
+        }
 
         //step
 
@@ -213,7 +226,15 @@ namespace ImprovedFires.Simulation
 
         public void UpdateAirflow(float value)
         {
-            airflow = value;
+            airflowControl = value;
+        }
+
+        private void SetAirflowMinimum()
+        {
+            if(type == FireType.Campfire) airflowMin = 0.7f;
+            else if(type == FireType.FireBarrel || type == FireType.Fireplace || type == FireType.RimGrill) airflowMin = 0.5f; 
+            else if(type == FireType.WoodStove || type == FireType.Forge) airflowMin = 0.25f;
+            else airflowMin = 0.35f;
         }
 
         public bool CanTakeTorch()

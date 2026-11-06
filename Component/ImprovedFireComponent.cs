@@ -1,4 +1,5 @@
 ﻿using Il2Cpp;
+using ImprovedFires.Enums;
 using ImprovedFires.Simulation;
 using ImprovedFires.Utilities;
 using System;
@@ -27,7 +28,18 @@ namespace ImprovedFires.Component
 
         public void Awake()
         {
-            fireSim = new FireSimulation();
+
+            FireType type;
+
+            if(this.gameObject.transform.parent.gameObject.name.ToLowerInvariant().Contains("stove")) type = FireType.WoodStove;
+            else if(this.gameObject.transform.parent.gameObject.name.ToLowerInvariant().Contains("barrel")) type = FireType.FireBarrel;
+            else if(this.gameObject.transform.parent.gameObject.name.ToLowerInvariant().Contains("campfire")) type = FireType.Campfire;
+            else if(this.gameObject.transform.parent.gameObject.name.ToLowerInvariant().Contains("fireplace")) type = FireType.Fireplace;
+            else if(this.gameObject.transform.parent.gameObject.name.ToLowerInvariant().Contains("grill")) type = FireType.RimGrill;
+            else if(this.gameObject.transform.parent.gameObject.name.ToLowerInvariant().Contains("forge")) type = FireType.Forge;
+            else type = FireType.Campfire;
+
+            fireSim = new FireSimulation(type);
         }
 
         public void Update() 
@@ -90,7 +102,15 @@ namespace ImprovedFires.Component
             return t;
         }
 
-       
+       public string GetAirflowLabel()
+        {
+            
+            string airflowLabel = "Airflow";
+
+            if(this.gameObject.name.ToLowerInvariant().Contains("stove")) airflowLabel = "Damper";
+
+            return airflowLabel;
+        }
 
     }
 }

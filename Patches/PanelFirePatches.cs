@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using ImprovedFires.Component;
 using ImprovedFires.Simulation;
 using UnityEngine.UI;
+using ImprovedFires.Utilities;
 
 namespace ImprovedFires.Patches
 {
@@ -56,29 +57,80 @@ namespace ImprovedFires.Patches
 
         [HarmonyPatch(typeof(Panel_FeedFire), nameof(Panel_FeedFire.Initialize))]
 
-        internal class Panel_FeedFire_AddButtons
+        internal class Panel_FeedFire_AddSlider
         {
-            
+            public static SliderRow? airflowRow;
             private static void Postfix(Panel_FeedFire __instance)
             {
-                
-
                 //setup slider
-
-                Panel_OptionsMenu options = InterfaceManager.GetPanel<Panel_OptionsMenu>();
-
-                GameObject sliderObjGroup = options.m_AudioTab.transform.GetChild(0).gameObject;
-                
-                GameObject labelObj = sliderObjGroup.transform.GetChild(1).gameObject;
-                UILabel label = labelObj.GetComponent<UILabel>();
-                label.mText = "Airflow";
-
-                GameObject sliderObj = sliderObjGroup.transform.GetChild(0).gameObject;
-
-                
-
+                GameObject? go = PlaceSlider(__instance.gameObject, "Airflow", new Vector3(-855f, -200f, 0f));
+                if (go != null)
+                { 
+                    airflowRow = new SliderRow(go, GetFire(__instance).GetAirflowLabel(), 0.25f, 1f, 16, "{0:0.00}", () => GetFire(__instance)?.fireSim.airflowControl ?? 1f, v => GetFire(__instance)?.UpdateAirflow(v));
+                    if (airflowRow.Name != null)
+                    {   //this moves the label towards the slider
+                        Vector3 p = airflowRow.Name.transform.localPosition;
+                        airflowRow.Name.transform.localPosition = new Vector3(p.x + 300f, p.y, p.z); 
+                    }
+                }
             }
 
+            private static GameObject? sliderTemplate;
+            private static GameObject? GetSliderTemplate()
+            {
+                if (sliderTemplate != null) return sliderTemplate;
+
+                Panel_OptionsMenu options = InterfaceManager.LoadPanel<Panel_OptionsMenu>();
+                if (options == null || options.m_FieldOfViewSlider == null) return null;
+
+                // Inactive holder, so the copy's Awake doesn't run before we strip it.
+                GameObject holder = new GameObject("ImprovedFires Slider Template");
+                UnityEngine.Object.DontDestroyOnLoad(holder);
+                holder.SetActive(false);
+
+                GameObject slider = UnityEngine.Object.Instantiate(options.m_FieldOfViewSlider.gameObject, holder.transform, false);
+                slider.name = "Slider";
+
+                // The spawner would rebuild it as the vanilla FOV slider; UILocalize would put the vanilla text back.
+                foreach (GenericSliderSpawner spawner in slider.GetComponentsInChildren<GenericSliderSpawner>(true))
+                {
+                    UnityEngine.Object.DestroyImmediate(spawner);
+                }
+                StripLocalize(slider);
+
+                sliderTemplate = slider;
+                return sliderTemplate;
+            }
+            private static GameObject? PlaceSlider(GameObject parent, string name, Vector3 localPosition)
+            {
+                GameObject? template = GetSliderTemplate();
+                if (template == null) return null;
+
+                GameObject row = UnityEngine.Object.Instantiate(template, parent.transform, false);
+                row.name = name;
+                foreach (Transform node in row.GetComponentsInChildren<Transform>(true))
+                {
+                    node.gameObject.layer = parent.layer;
+                }
+                row.transform.localPosition = localPosition;
+                row.SetActive(true);
+                return row;
+            }
+
+            private static void StripLocalize(GameObject root)
+            {
+                foreach (UILocalize localize in root.GetComponentsInChildren<UILocalize>(true))
+                {
+                    UnityEngine.Object.Destroy(localize);
+                }
+            }
+
+            private static ImprovedFireComponent? GetFire(Panel_FeedFire panel)
+            {
+                if (panel.m_FireplaceInteraction == null || panel.m_FireplaceInteraction.Fire == null) return null;
+                ImprovedFireComponent iFire = panel.m_FireplaceInteraction.Fire.GetComponent<ImprovedFireComponent>();
+                return iFire == null ? null : iFire;
+            }
         }
 
 
@@ -92,6 +144,8 @@ namespace ImprovedFires.Patches
 			{
                 SetFireFillAmount(__instance);
 				(__instance.m_Sprite_FireFill as UIBasicSprite).fillAmount = fill;
+
+                Panel_FeedFire_AddSlider.airflowRow?.Refresh();
 			}
 
             private static void SetFireFillAmount(Panel_FeedFire __instance)
