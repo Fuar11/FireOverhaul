@@ -64,6 +64,12 @@ namespace ImprovedFires.Component
 
         }
 
+        public void UpdateAirflow(float value) //call this
+        {
+            fireSim.UpdateAirflow(value);
+            RefreshDurationEstimate();
+        }
+
         public float GetDurationEstimate() => durationEstimate;
         public void RefreshDurationEstimate()
         {

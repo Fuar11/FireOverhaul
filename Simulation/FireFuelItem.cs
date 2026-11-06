@@ -53,6 +53,12 @@ namespace ImprovedFires.Simulation
         public const float IGNITION_RANGE_FACTOR = 0.85f;
         public const float MIN_IGNITION_SPEED = 0.25f;
 
+        //airflow 
+
+        public const float AIRFLOW_EXP_BURNING = 1.0f;
+        public const float AIRFLOW_EXP_COALS = 1.5f;
+        public const float AIRFLOW_EXP_EMBERS = 1.5f;
+
         public FireFuelItem(string name, FuelType type, float timeToIgniteAtTemp, float ignitionTemp, float maxPowerOutput, float energyContent, float coalsThreshold, float embersThreshold, float charcoalYield)
         {
             this.name = name;
@@ -184,12 +190,14 @@ namespace ImprovedFires.Simulation
             else if (state == FireFuelItemState.Burning)
             {
                 currentPowerOutput = maxPowerOutput * CalculateCombustionCurve() * fireSim.burnRateMult;
+                currentPowerOutput *= Mathf.Pow(fireSim.airflow, AIRFLOW_EXP_BURNING);
 
                 if (burnAmount >= coalsThreshold) state = FireFuelItemState.Coals;
             }
             else if(state == FireFuelItemState.Coals)
             {
                 currentPowerOutput = coalsPowerOutput * CalculateSlowDecayCurve() * fireSim.burnRateMult;
+                currentPowerOutput *= Mathf.Pow(fireSim.airflow, AIRFLOW_EXP_COALS);
 
                 if (burnAmount >= emberThreshold) state = FireFuelItemState.Embers;
             }
@@ -203,6 +211,7 @@ namespace ImprovedFires.Simulation
                 }
 
                 currentPowerOutput = emberPowerOutput * CalculateEmberCurve() * fireSim.burnRateMult;
+                currentPowerOutput *= Mathf.Pow(fireSim.airflow, AIRFLOW_EXP_EMBERS);
                 //Main.Logger.Log($"Fuel {name} embers power output is {currentPowerOutput}", ComplexLogger.FlaggedLoggingLevel.Debug);
 
                 if (remainingEnergy <= energyContent * 0.01f)

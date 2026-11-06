@@ -25,6 +25,8 @@ namespace ImprovedFires.Simulation
         public float innerRadius;
         public float outerRadius;
 
+        public float airflow;
+
         //power
         public const float BASELINE_POWER = 10000f; // watts
         public const float BASELINE_INTERNAL_TEMP = 700f;  // degrees
@@ -207,6 +209,11 @@ namespace ImprovedFires.Simulation
                 totalFireTemperature *= 4f;
             }
             else totalFireTemperature /= 20f;
+        }
+
+        public void UpdateAirflow(float value)
+        {
+            airflow = value;
         }
 
         public bool CanTakeTorch()

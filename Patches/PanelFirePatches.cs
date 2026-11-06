@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ImprovedFires.Component;
 using ImprovedFires.Simulation;
+using UnityEngine.UI;
 
 namespace ImprovedFires.Patches
 {
@@ -47,6 +48,34 @@ namespace ImprovedFires.Patches
 
                 __instance.m_SelectFuel.m_LabelName.text = tinder;
 
+
+            }
+
+        }
+
+
+        [HarmonyPatch(typeof(Panel_FeedFire), nameof(Panel_FeedFire.Initialize))]
+
+        internal class Panel_FeedFire_AddButtons
+        {
+            
+            private static void Postfix(Panel_FeedFire __instance)
+            {
+                
+
+                //setup slider
+
+                Panel_OptionsMenu options = InterfaceManager.GetPanel<Panel_OptionsMenu>();
+
+                GameObject sliderObjGroup = options.m_AudioTab.transform.GetChild(0).gameObject;
+                
+                GameObject labelObj = sliderObjGroup.transform.GetChild(1).gameObject;
+                UILabel label = labelObj.GetComponent<UILabel>();
+                label.mText = "Airflow";
+
+                GameObject sliderObj = sliderObjGroup.transform.GetChild(0).gameObject;
+
+                
 
             }
 
