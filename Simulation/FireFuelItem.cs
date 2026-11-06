@@ -109,6 +109,15 @@ namespace ImprovedFires.Simulation
                 coalsRadiantFraction = 0.4f;
                 embersRadiantFraction = 0.3f;
             }
+            else if (type == FuelType.Book)
+            {
+                coalsPowerFactor = 0.1f;
+                emberPowerFactor = 0.04f;
+                coalsWeightFactor = 4;
+                burningRadiantFraction = 0.2f;
+                coalsRadiantFraction = 0.45f;
+                embersRadiantFraction = 0.1f;
+            }
             else if (type == FuelType.Synthetic)
             {
                 coalsPowerFactor = 0.15f;
@@ -169,8 +178,6 @@ namespace ImprovedFires.Simulation
                 ignitionProgress += gameDeltaTime / ignitionDuration;
                 if (ignitionProgress >= 1f)
                 {
-                    //burnAmount += 0.01f; 
-                    remainingEnergy -= energyContent * 0.01f; //a little push
                     state = FireFuelItemState.Burning;
                 }
             }
@@ -217,7 +224,7 @@ namespace ImprovedFires.Simulation
             switch (type)
             {
                 case FuelType.Wood:
-                    return 4f * burnAmount * (1f - burnAmount);
+                    return CalculateFirewoodCombustion();
                 case FuelType.Stick:
                     return CalculateStickCombustion();
                 case FuelType.Coal:
@@ -225,36 +232,123 @@ namespace ImprovedFires.Simulation
                     return Mathf.Lerp(0.3f, 1f, t);
                 case FuelType.Paper:
                     return Mathf.Pow(1f - burnAmount, 1.5f);
+                case FuelType.Book:
+                    return CalculateBookCombustion();
                 case FuelType.Synthetic:
                     return CalculateFireLogCombustion();
-                default: return 4f * burnAmount * (1f - burnAmount);
+                default: return CalculateFirewoodCombustion();
             }
         }
 
-        private float CalculateFireLogCombustion()
+        private float CalculateFirewoodCombustion()
         {
-            if (burnAmount < 0.2f)
+            
+            float start = 0.2f; //starting power fraction
+            float end = 0.55f;  //power the curve ends at
+            float ramp = 0.08f; //burn amount the curve starts declining at
+
+            float curveProgress = 0;
+
+            if(burnAmount < ramp)
             {
-                return Mathf.Lerp(0.5f, 1f, burnAmount / 0.2f);
+                
+                curveProgress = Mathf.InverseLerp(0, ramp, burnAmount);
+                return Mathf.Lerp(start, 1f, curveProgress);
+
+            }
+            else
+            {
+                curveProgress = Mathf.InverseLerp(ramp, coalsThreshold, burnAmount);
+                return Mathf.Lerp(1f, end, curveProgress);
             }
 
-            if (burnAmount < 0.8f)
+
+
+        }
+        private float CalculateFireLogCombustion()
+        {
+
+            float start = 0.5f; //starting power fraction
+            float plateauDropPower = 0.75f;
+            float rampEnd = 0.2f; 
+            float ramp = coalsThreshold * rampEnd; //burn amount the plateau starts
+            float plateauDrop = coalsThreshold * plateauDropPower; //burn amount the plateau starts dropping
+            float end = 0.4f; //power the curve ends at
+
+            float curveProgress = 0f;
+
+            if (burnAmount < ramp) //ramping up
+            {
+                curveProgress = Mathf.InverseLerp(0, ramp, burnAmount);
+                return Mathf.Lerp(start, 1f, curveProgress);
+            }
+            else if (burnAmount < plateauDrop) //plateau
             {
                 return 1f;
             }
+            else //decline
+            {
+                curveProgress = Mathf.InverseLerp(plateauDrop, coalsThreshold, burnAmount);
+                return Mathf.Lerp(1f, end, curveProgress);
+            }
 
-            return Mathf.Lerp(1f, 0.2f, (burnAmount - 0.8f) / 0.2f);
         }
 
         private float CalculateStickCombustion()
         {
-            if (burnAmount < 0.1f)
-                return burnAmount / 0.1f;
 
-            if (burnAmount < 0.8f)
+            float start = 0.5f; //starting power fraction
+            float plateauDropPower = 0.8f;
+            float rampEnd = 0.1f; 
+            float ramp = coalsThreshold * rampEnd; //burn amount the plateau starts
+            float plateauDrop = coalsThreshold * plateauDropPower; //burn amount the plateau starts dropping
+            float end = 0.4f; //power the curve ends at
+
+            float curveProgress = 0f;
+
+            if (burnAmount < ramp)
+            {
+                 curveProgress = Mathf.InverseLerp(0, ramp, burnAmount);
+                return Mathf.Lerp(start, 1f, curveProgress);
+            }
+            else if(burnAmount < plateauDrop)
+            {
                 return 1f;
+            }
+            else
+            {
+                curveProgress = Mathf.InverseLerp(plateauDrop, coalsThreshold, burnAmount);
+                return Mathf.Lerp(1f, end, curveProgress);
+            }
 
-            return 1f - ((burnAmount - 0.8f) / 0.2f);
+        }
+
+        private float CalculateBookCombustion()
+        {
+            
+            float start = 0.7f;
+            float flareEnd = 0.05f;
+            float settleEnd = 0.2f;
+            float settleEndPower = 0.7f;
+            float slowBurnEndPower = 0.6f;
+
+            float curveProgress = 0f;
+
+            if(burnAmount < flareEnd){ //flare up
+            
+                curveProgress = Mathf.InverseLerp(0, flareEnd, burnAmount);
+                return Mathf.Lerp(start, 1f, curveProgress);
+            }
+            else if(burnAmount < settleEnd)
+            {
+                curveProgress = Mathf.InverseLerp(flareEnd, settleEnd, burnAmount);
+                return Mathf.Lerp(1f, settleEndPower, curveProgress);
+            }
+            else
+            {
+                curveProgress = Mathf.InverseLerp(settleEnd, coalsThreshold, burnAmount);
+                return Mathf.Lerp(settleEndPower, slowBurnEndPower, curveProgress);
+            }
         }
 
         private float CalculateSlowDecayCurve()

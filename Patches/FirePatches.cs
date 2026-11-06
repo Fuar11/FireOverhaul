@@ -186,7 +186,6 @@ namespace ImprovedFires.Patches
                     }
 
                     fuelItem.gearItemRef = fi;
-                    fuelItem.burnAmount += 0.01f; //a little push
                     fuelItem.state = FireFuelItemState.Burning;
 
                     //find a way to add tinder here

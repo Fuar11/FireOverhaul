@@ -15,6 +15,7 @@ namespace ImprovedFires.Enums
         Coal = 3,
         Paper = 4,
         Synthetic = 5,
+        Book = 6,
 
     }
 }
