@@ -20,6 +20,7 @@ namespace ImprovedFires.Patches
 
             public static bool Prefix(HeatSource __instance)
             {
+
                 ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
                 if (iFire == null)
                 {
@@ -35,7 +36,7 @@ namespace ImprovedFires.Patches
 
                 if (iFire == null)
                 {
-                    Main.Logger.Log("iFire is null when trying to add heat source.", ComplexLogger.FlaggedLoggingLevel.Error);
+                    //Main.Logger.Log("iFire is null when trying to add heat source.", ComplexLogger.FlaggedLoggingLevel.Error);
                     return;
                 }
 

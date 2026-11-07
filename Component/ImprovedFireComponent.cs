@@ -31,12 +31,15 @@ namespace ImprovedFires.Component
 
             FireType type;
 
-            if(this.gameObject.transform.parent.gameObject.name.ToLowerInvariant().Contains("stove")) type = FireType.WoodStove;
-            else if(this.gameObject.transform.parent.gameObject.name.ToLowerInvariant().Contains("barrel")) type = FireType.FireBarrel;
-            else if(this.gameObject.transform.parent.gameObject.name.ToLowerInvariant().Contains("campfire")) type = FireType.Campfire;
-            else if(this.gameObject.transform.parent.gameObject.name.ToLowerInvariant().Contains("fireplace")) type = FireType.Fireplace;
-            else if(this.gameObject.transform.parent.gameObject.name.ToLowerInvariant().Contains("grill")) type = FireType.RimGrill;
-            else if(this.gameObject.transform.parent.gameObject.name.ToLowerInvariant().Contains("forge")) type = FireType.Forge;
+            Transform t = transform.parent != null ? transform.parent : transform;
+            string name = t.gameObject.name.ToLowerInvariant();
+
+            if(name.Contains("stove")) type = FireType.WoodStove;
+            else if(name.ToLowerInvariant().Contains("barrel")) type = FireType.FireBarrel;
+            else if(name.ToLowerInvariant().Contains("campfire")) type = FireType.Campfire;
+            else if(name.ToLowerInvariant().Contains("fireplace")) type = FireType.Fireplace;
+            else if(name.ToLowerInvariant().Contains("grill")) type = FireType.RimGrill;
+            else if(name.ToLowerInvariant().Contains("forge")) type = FireType.Forge;
             else type = FireType.Campfire;
 
             fireSim = new FireSimulation(type);
@@ -76,7 +79,7 @@ namespace ImprovedFires.Component
 
         }
 
-        public void UpdateAirflow(float value) //call this
+        public void UpdateAirflow(float value)
         {
             fireSim.UpdateAirflow(value);
             RefreshDurationEstimate();
@@ -104,12 +107,8 @@ namespace ImprovedFires.Component
 
        public string GetAirflowLabel()
         {
-            
-            string airflowLabel = "Airflow";
-
-            if(this.gameObject.name.ToLowerInvariant().Contains("stove")) airflowLabel = "Damper";
-
-            return airflowLabel;
+            if(fireSim.type == FireType.WoodStove) return  "Damper";
+            else return "Airflow";
         }
 
     }

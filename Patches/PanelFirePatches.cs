@@ -66,7 +66,11 @@ namespace ImprovedFires.Patches
                 GameObject? go = PlaceSlider(__instance.gameObject, "Airflow", new Vector3(-855f, -200f, 0f));
                 if (go != null)
                 { 
-                    airflowRow = new SliderRow(go, GetFire(__instance).GetAirflowLabel(), 0.25f, 1f, 16, "{0:0.00}", () => GetFire(__instance)?.fireSim.airflowControl ?? 1f, v => GetFire(__instance)?.UpdateAirflow(v));
+                    airflowRow = new SliderRow(go, "Airflow", 0f, 1f, 21, v => {
+                    ImprovedFireComponent? fire = GetFire(__instance);
+                    float shown = fire != null ? fire.fireSim.GetAirflow(v) : v;
+                    return $"{shown:0%}";
+                }, () => GetFire(__instance)?.fireSim.airflowControl ?? 1f, v => GetFire(__instance)?.UpdateAirflow(v));
                     if (airflowRow.Name != null)
                     {   //this moves the label towards the slider
                         Vector3 p = airflowRow.Name.transform.localPosition;
@@ -125,7 +129,7 @@ namespace ImprovedFires.Patches
                 }
             }
 
-            private static ImprovedFireComponent? GetFire(Panel_FeedFire panel)
+            public static ImprovedFireComponent? GetFire(Panel_FeedFire panel)
             {
                 if (panel.m_FireplaceInteraction == null || panel.m_FireplaceInteraction.Fire == null) return null;
                 ImprovedFireComponent iFire = panel.m_FireplaceInteraction.Fire.GetComponent<ImprovedFireComponent>();
@@ -146,6 +150,9 @@ namespace ImprovedFires.Patches
 				(__instance.m_Sprite_FireFill as UIBasicSprite).fillAmount = fill;
 
                 Panel_FeedFire_AddSlider.airflowRow?.Refresh();
+                ImprovedFireComponent? fire = Panel_FeedFire_AddSlider.GetFire(__instance);
+                SliderRow? row = Panel_FeedFire_AddSlider.airflowRow;
+                if (fire != null && row != null && row.Name != null) row.Name.text = fire.GetAirflowLabel();
 			}
 
             private static void SetFireFillAmount(Panel_FeedFire __instance)

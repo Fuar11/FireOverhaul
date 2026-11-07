@@ -17,12 +17,12 @@ namespace ImprovedFires.Utilities
         private readonly UILabel mValue;
         private readonly float mFrom;
         private readonly float mTo;
-        private readonly string mFormat;
+        private readonly Func<float, string> mDisplay;
         private readonly Func<float> mRead;
         private readonly Action<float> mWrite;
         private bool mUpdating;
 
-        public SliderRow(GameObject root, string name, float from, float to, int steps, string format, Func<float> read, Action<float> write)
+        public SliderRow(GameObject root, string name, float from, float to, int steps, Func<float, string> display, Func<float> read, Action<float> write)
         {
             Root = root;
             Name = NameLabel(root);
@@ -36,7 +36,7 @@ namespace ImprovedFires.Utilities
             mValue = mConsole.m_SliderObject.GetComponentInChildren<UILabel>(true);
             mFrom = from;
             mTo = to;
-            mFormat = format;
+            mDisplay = display;
             mRead = read;
             mWrite = write;
             mSlider.numberOfSteps = steps;
@@ -44,16 +44,13 @@ namespace ImprovedFires.Utilities
             EventDelegate.Set(mSlider.onChange, new Action(OnChange));
         }
 
-        /// <summary>The slider's current value in [from, to].</summary>
         public float Value => mFrom + mSlider.value * (mTo - mFrom);
 
-        /// <summary>Move one step, like the arrow keys do. direction &lt; 0 = decrease, otherwise increase.</summary>
         public void Step(int direction)
         {
             if (direction < 0) mConsole.OnDecrease(); else mConsole.OnIncrease();
         }
 
-        /// <summary>Pull the value from `read` into the slider. Skipped while the player is dragging it.</summary>
         public void Refresh()
         {
             if (UICamera.hoveredObject != null && UICamera.hoveredObject.transform.IsChildOf(Root.transform) && Input.GetMouseButton(0))
@@ -64,10 +61,9 @@ namespace ImprovedFires.Utilities
             mUpdating = true;
             mSlider.value = (value - mFrom) / (mTo - mFrom);
             mUpdating = false;
-            SetText(mValue, string.Format(mFormat, value));
+            SetText(mValue, mDisplay(value));
         }
 
-        /// <summary>Finds the row's name label (the first child "Label*" that isn't "Label_Value").</summary>
         public static UILabel? NameLabel(GameObject root)
         {
             for (int i = 0; i < root.transform.childCount; i++)
@@ -84,7 +80,7 @@ namespace ImprovedFires.Utilities
         private void OnChange()
         {
             float value = Value;
-            SetText(mValue, string.Format(mFormat, value));
+            SetText(mValue, mDisplay(value));
             if (!mUpdating)
             {
                 mWrite(value);

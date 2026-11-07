@@ -22,6 +22,9 @@ namespace ImprovedFires.Patches
 
                 if (__instance.gameObject)
                 {
+
+                    if(__instance.gameObject.name.ToLowerInvariant().Contains("invisiblefire")) return;
+
                     Main.Logger.Log("Adding fire component to fire object, wahoo!", ComplexLogger.FlaggedLoggingLevel.Debug);
                     __instance.gameObject.AddComponent<ImprovedFireComponent>();
                 }
@@ -37,17 +40,22 @@ namespace ImprovedFires.Patches
 
         public class DisableUpdateLoop
         {
-            public static bool Prefix() => false;
+            public static bool Prefix(Fire __instance)
+            {
+                
+                if(__instance.gameObject.name.ToLowerInvariant().Contains("invisiblefire")) return true;
+                else return false;
 
+            }
             public static void Postfix(Fire __instance)
             {
 
-                if (GameManager.m_IsPaused || GameManager.s_IsGameplaySuspended)
+                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+
+                if (GameManager.m_IsPaused || GameManager.s_IsGameplaySuspended || iFire == null)
                 {
                     return;
                 }
-
-                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
 
                 if (__instance.m_TriggerStageRequested)
                 {
@@ -162,7 +170,10 @@ namespace ImprovedFires.Patches
 
             public static void Postfix(Fire __instance, ref bool success)
             {
+
                 ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+
+                if(iFire == null) return;
 
                 Main.Logger.Log($"Exit fire starting, fire success is {success}", ComplexLogger.FlaggedLoggingLevel.Debug);
 
@@ -243,6 +254,8 @@ namespace ImprovedFires.Patches
 
                 ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
 
+                if(iFire == null) return;
+
                 __instance.StopFireLoop();
                 __instance.m_HeatSource.TurnOff(); //maybe for now
                 if (__instance.m_FX)
@@ -279,6 +292,8 @@ namespace ImprovedFires.Patches
             public static void Postfix(Fire __instance, ref float __result)
             {
                 ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+
+                if(iFire == null) return;
 
                 if (iFire.fireSim.state > Enums.FireState.Embers)
                 {

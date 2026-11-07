@@ -26,11 +26,12 @@ namespace ImprovedFires.Simulation
         public float innerRadius;
         public float outerRadius;
 
+        //airflow
         public float airflowControl = 1f;
 
         public float airflowMin = 0.25f;
-        public float airflow => Mathf.Lerp(airflowMin, 1f, airflowControl);
-
+        public float GetAirflow(float control) => Mathf.Lerp(airflowMin, 1f, control); 
+        public float airflow => GetAirflow(airflowControl);
 
         //power
         public const float BASELINE_POWER = 10000f; // watts
