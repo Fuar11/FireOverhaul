@@ -2,7 +2,41 @@ using Random = System.Random;
 
 namespace ImprovedFires
 {
-    internal class Utils
+    public class Utils
     {
+
+
+        public static string GetHeatIncreaseText(float heatIncrease, bool includeUnits, Fire fire)
+        {
+
+            string text = "";
+            string text2 = Localization.Get("GAMEPLAY_DegreesCUnits");
+            if (GetUserMetric() == 2)
+            {
+                heatIncrease *= 1.8f;
+                text2 = Localization.Get("GAMEPLAY_DegreesFUnits");
+            }
+            heatIncrease = fire.RoundOutput(heatIncrease);
+            if (Il2Cpp.Utils.IsZero(heatIncrease))
+            {
+                return text + "+0" + text2;
+            }
+            return text + "+" + heatIncrease + text2;
+        }
+
+        public static int GetUserMetric()
+        {
+            Panel_OptionsMenu Options = InterfaceManager.GetPanel<Panel_OptionsMenu>();
+            if (Options == null) return -1;
+            Il2CppSystem.Collections.Generic.List<GameObject> Items = Options.m_DisplayMenuItems;
+            if (Items == null) return -2;
+            GameObject Units = Items[3];
+            if (Units == null) return -3;
+            ConsoleComboBox ComboBox = Units.GetComponent<ConsoleComboBox>();
+            if (ComboBox == null) return -4;
+            if (ComboBox.GetCurrentIndex() == 0) return 1;
+            else return 2;
+        }
     }
+
 }

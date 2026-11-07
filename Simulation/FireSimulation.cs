@@ -41,10 +41,13 @@ namespace ImprovedFires.Simulation
 
         //temperature control
         public const float TEMP_HEAT_TIME_CONSTANT = 30f;  // game seconds
-        public const float TEMP_COOL_TIME_CONSTANT = 240f; // game seconds
+        public const float TEMP_COOL_TIME_CONSTANT = 240f; 
 
         public const float EXT_HEAT_TIME_CONSTANT = 60f;   // game seconds
-        public const float EXT_COOL_TIME_CONSTANT = 300f;  // game seconds
+        public const float EXT_COOL_TIME_CONSTANT = 300f; 
+
+        public const float COOK_HEAT_TIME_CONSTANT = 120f; // game seconds
+        public const float COOK_COOL_TIME_CONSTANT = 480f; 
 
         public const float MAX_RADIANT_HEAT = 80f;     // °C, vanilla max
         public const float RADIANCE_POWER_SCALE = 3000f; // watts of radiant power
@@ -123,8 +126,8 @@ namespace ImprovedFires.Simulation
             float targetCookingTemp = totalFireTemperature * COOKING_HEAT_TRANSFER_FACTOR;
 
              float cookTimeConstant = targetCookingTemp > cookingSlotTemperature
-                ? TEMP_HEAT_TIME_CONSTANT
-                : TEMP_COOL_TIME_CONSTANT;
+                ? COOK_HEAT_TIME_CONSTANT
+                : COOK_COOL_TIME_CONSTANT;
 
             cookingSlotTemperature = CalculateTemperatureSmoothing(cookingSlotTemperature, targetCookingTemp, cookTimeConstant, dt);
 
@@ -275,7 +278,7 @@ namespace ImprovedFires.Simulation
 
          public static float GetCookMinTemp(CookType type)
         {
-            if(type == CookType.Snow) //is snow
+            if(type == CookType.Snow || type == CookType.None) //is snow or can add snow
             {
                 return 1f;
                

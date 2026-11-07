@@ -4,12 +4,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ImprovedFires.Utilities;
+using ImprovedFires.Simulation;
+using ImprovedFires.Enums;
 
 namespace ImprovedFires.Patches
 {
     internal class UIPatches
     {
-        
         [HarmonyPatch(typeof(FireplaceInteraction), nameof(FireplaceInteraction.GetHoverText))]
 
         public class HoverTextOverride
@@ -28,7 +30,7 @@ namespace ImprovedFires.Patches
                     return;
                 }
 
-                if(fire.m_FireState != FireState.Off)
+                if(fire.m_FireState != Il2Cpp.FireState.Off)
                 {
 
                     string state = "";
@@ -54,49 +56,83 @@ namespace ImprovedFires.Patches
 
                     values[4] = displayDuration ? "\n" : "";
 
-                    values[5] = GetHeatIncreaseText(iFire.fireSim.totalExternalFireTemperature, true, fire);
+                    values[5] = Utils.GetHeatIncreaseText(iFire.fireSim.totalExternalFireTemperature, true, fire);
 
                     values[6] = " - ";
 
-                    values[7] = GetHeatIncreaseText(iFire.fireSim.totalFireTemperature, true, fire);
+                    values[7] = Utils.GetHeatIncreaseText(iFire.fireSim.totalFireTemperature, true, fire);
 
                     extraText = string.Concat(values);
                     
                     __result = extraText;
                 }
             }
+        }
 
-            private static string GetHeatIncreaseText(float heatIncrease, bool includeUnits, Fire fire)
+        [HarmonyPatch(typeof(Panel_Cooking), nameof(Panel_Cooking.Update))]
+
+        internal class CookingPanelCheck
+        {
+            
+
+            private static void Prefix(Panel_Cooking __instance,  out bool __state)
             {
 
-                string text = "";
-                string text2 = Localization.Get("GAMEPLAY_DegreesCUnits");
-                if (GetUserMetric() == 2)
+                __state = false;
+
+                Fire fire = __instance.m_Fire;
+                if (fire == null) return;
+
+                ImprovedFireComponent iFire = fire.GetComponent<ImprovedFireComponent>();
+                    if (iFire == null) return;
+
+                if(__instance.m_Fire.m_FireState == Il2Cpp.FireState.Off && iFire.fireSim.cookingSlotTemperature > FireSimulation.GetCookMinTemp(CookType.Snow))
                 {
-                    heatIncrease *= 1.8f;
-                    text2 = Localization.Get("GAMEPLAY_DegreesFUnits");
+                     fire.m_FireState = Il2Cpp.FireState.Starting_FireStarterUse;
+                    __state = true;
                 }
-                heatIncrease = fire.RoundOutput(heatIncrease);
-                if (Il2Cpp.Utils.IsZero(heatIncrease))
+            }
+            private static void Postfix(Panel_Cooking __instance, bool __state)
+            {
+                
+                if(__instance.m_Fire != null && __state)
                 {
-                    return text + "+0" + text2;
+                    __instance.m_Fire.m_FireState = Il2Cpp.FireState.Off;
                 }
-                return text + "+" + heatIncrease + text2;
             }
 
-            public static int GetUserMetric()
-{
-                Panel_OptionsMenu Options = InterfaceManager.GetPanel<Panel_OptionsMenu>();
-                if (Options == null) return -1;
-                Il2CppSystem.Collections.Generic.List<GameObject> Items = Options.m_DisplayMenuItems;
-                if (Items == null) return -2;
-                GameObject Units = Items[3];
-                if (Units == null) return -3;
-                ConsoleComboBox ComboBox = Units.GetComponent<ConsoleComboBox>();
-                if (ComboBox == null) return -4;
-                if (ComboBox.GetCurrentIndex() == 0) return 1;
-                else return 2;
-}
-        } 
+        }
+
+         [HarmonyPatch(typeof(Panel_CookWater), nameof(Panel_CookWater.Update))]
+
+        internal class CookWaterPanelCheck
+        {
+           private static void Prefix(Panel_CookWater __instance, out bool __state)
+            {
+                 __state = false;
+
+                Fire fire = __instance.m_Fire;
+                if (fire == null) return;
+
+                ImprovedFireComponent iFire = fire.GetComponent<ImprovedFireComponent>();
+                    if (iFire == null) return;
+
+                if(__instance.m_Fire.m_FireState == Il2Cpp.FireState.Off && iFire.fireSim.cookingSlotTemperature > FireSimulation.GetCookMinTemp(CookType.Snow))
+                {
+                     fire.m_FireState = Il2Cpp.FireState.Starting_FireStarterUse;
+                    __state = true;
+                }
+            }
+            private static void Postfix(Panel_CookWater __instance, bool __state)
+            {
+                
+               if(__instance.m_Fire != null && __state)
+                {
+                    __instance.m_Fire.m_FireState = Il2Cpp.FireState.Off;
+                }
+            }
+
+        }
+
     }
 }

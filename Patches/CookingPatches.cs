@@ -10,7 +10,7 @@ namespace ImprovedFires.Patches
     {
 
 
-        [HarmonyPatch(typeof(CookingPotItem), nameof(CookingPotItem.AttachedFireIsBurning))] //translation: attached fire meets sufficient conditions to keep cooking food
+        [HarmonyPatch(typeof(CookingPotItem), nameof(CookingPotItem.AttachedFireIsBurning))] //translation: attached fire meets sufficient conditions to A) open the cooking pot panel and B) keep cooking food
 
         private class KeepCooking
         {
@@ -64,18 +64,40 @@ namespace ImprovedFires.Patches
             
                 float rate = iFire.fireSim.CalculateCookSpeed(type);
 
+                Main.Logger.Log($"Original cook time is {cookTimeMinutes}", ComplexLogger.FlaggedLoggingLevel.Debug);
+
                 cookTimeMinutes /= rate;
+                Main.Logger.Log($"New cook time is {cookTimeMinutes}", ComplexLogger.FlaggedLoggingLevel.Debug);
                 readyTimeMinutes /= readyTimeMinutes != 1f ? rate : 1f; //this ensures that if water is melting, once it reaches it's melted state, it gets set to boiling right away
                 
             }
         }
 
-        
+        [HarmonyPatch(typeof(CookingPotItem), nameof(CookingPotItem.GetHoverText))]
+
+        internal static class DisplayCookingSlotTemp
+        {
+            
+            private static void Postfix(CookingPotItem __instance, ref string __result)
+            {
+                
+                if(__instance.m_FireBeingUsed == null) return;
+
+                ImprovedFireComponent iFire = __instance.m_FireBeingUsed.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+                if(iFire == null) return;
+
+                __result += " - " + Utils.GetHeatIncreaseText(iFire.fireSim.cookingSlotTemperature, true, __instance.m_FireBeingUsed);
+                Main.Logger.Log($"Display test for cooking pot item {__result}", ComplexLogger.FlaggedLoggingLevel.Debug);
+            }
+
+        }
+
          public static CookType GetCookType(CookingPotItem item)
             {
                 if(item.m_LitersSnowBeingMelted.m_Units > 0f) return CookType.Snow;  //is snow
                     else if(item.m_LitersWaterBeingBoiled.m_Units > 0f) return CookType.Water; //is water
-                    else return CookType.Food;
+                    else if(item.m_GearItemBeingCooked != null) return CookType.Food;
+                    else return CookType.None;
             }
 
        
