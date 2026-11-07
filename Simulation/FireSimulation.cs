@@ -13,6 +13,8 @@ namespace ImprovedFires.Simulation
 
         public float totalExternalFireTemperature;
         public float totalFireTemperature;
+
+        public float cookingSlotTemperature;
         private float corePower;
         private float totalRadiantPower;
         public float flamePower;
@@ -55,7 +57,7 @@ namespace ImprovedFires.Simulation
         public const float COALS_MIN = 150f;
 
         public const float HOT_CORE_MIN = 200f; //minimum temperature the fire can be before going out completely if no other fuel is combusting/embers and unburnt fuel is still on the fire
-
+        public const float COOKING_HEAT_TRANSFER_FACTOR = 0.4f; //fraction of the core internal temperature that transitions into the cooking slots
         public FireSimulation(FireType type)
         {
             
@@ -112,22 +114,27 @@ namespace ImprovedFires.Simulation
 
             float targetTemp = CalculateTemperature();
 
-            float timeConstant = targetTemp > totalFireTemperature
+             float timeConstant = targetTemp > totalFireTemperature
                 ? TEMP_HEAT_TIME_CONSTANT
                 : TEMP_COOL_TIME_CONSTANT;
 
-            float k = 1f - Mathf.Exp(-dt / timeConstant);
-            totalFireTemperature = Mathf.Lerp(totalFireTemperature, targetTemp, k);
+            totalFireTemperature = CalculateTemperatureSmoothing(totalFireTemperature, targetTemp, timeConstant, dt);
+
+            float targetCookingTemp = totalFireTemperature * COOKING_HEAT_TRANSFER_FACTOR;
+
+             float cookTimeConstant = targetCookingTemp > cookingSlotTemperature
+                ? TEMP_HEAT_TIME_CONSTANT
+                : TEMP_COOL_TIME_CONSTANT;
+
+            cookingSlotTemperature = CalculateTemperatureSmoothing(cookingSlotTemperature, targetCookingTemp, cookTimeConstant, dt);
 
             float targetTempExt = CalculateExternalTargetTemperature();
 
-            float externalTimeConstant = targetTempExt > totalExternalFireTemperature
+             float extTimeConstant = targetTempExt > totalExternalFireTemperature
                 ? EXT_HEAT_TIME_CONSTANT
                 : EXT_COOL_TIME_CONSTANT;
 
-            float extK = 1f - Mathf.Exp(-dt / externalTimeConstant);
-
-            totalExternalFireTemperature = Mathf.Lerp(totalExternalFireTemperature, targetTempExt, extK);
+            totalExternalFireTemperature = CalculateTemperatureSmoothing(totalExternalFireTemperature, targetTempExt, extTimeConstant, dt);
 
             SetInnerAndOuterRadius();
 
@@ -207,11 +214,77 @@ namespace ImprovedFires.Simulation
             return MAX_RADIANT_HEAT * (1f - Mathf.Exp(-totalRadiantPower / RADIANCE_POWER_SCALE));
         }
 
+        private float CalculateTemperatureSmoothing(float mainTemp, float targetTemp, float timeConstant, float dt)
+        {
+            float k = 1f - Mathf.Exp(-dt / timeConstant);
+
+            return Mathf.Lerp(mainTemp, targetTemp, k);
+        }
+
         private void SetInnerAndOuterRadius()
         {
             float heatScale = totalExternalFireTemperature / MAX_RADIANT_HEAT;
             innerRadius = Mathf.Lerp(0.5f, 3f, heatScale);
             outerRadius = Mathf.Lerp(2f, 8f, heatScale);
+        }
+
+        //cooking
+
+        public float CalculateCookSpeed(CookType type)
+        {
+            
+            float min; //minimum cooking slot temperature for given type to cook
+            float avg = 260f; //temperature for given food to cook at average rate
+            float cap = 450f; //temperature for given food to cook at maximum rate
+
+            float k; 
+            float rate;
+
+            float minRateAmt = 0.25f;
+            float avgRateAmt = 1f;
+            float capRateAmt = 2f;
+
+            min = GetCookMinTemp(type);
+
+            if(type == CookType.Snow) //is snow
+            {
+                minRateAmt = 0.0104f; //at minimum temp it takes 2 full days for 1L of snow to melt
+                avgRateAmt = 2f; //at average temp it takes 15 minutes to melt
+                capRateAmt = 5f; //at cap temp it takes 5 minutes to melt
+            }
+            else if(type == CookType.Water) //is water boiling
+            {
+                avgRateAmt = 2f;
+                capRateAmt = 3f;                
+            }
+
+
+            if(cookingSlotTemperature > avg)
+            {
+                k = Mathf.InverseLerp(avg, cap, cookingSlotTemperature);
+                rate = Mathf.Lerp(avgRateAmt, capRateAmt, k);
+            }
+            else
+            {
+                k = Mathf.InverseLerp(min, avg, cookingSlotTemperature);
+                rate = Mathf.Lerp(minRateAmt, avgRateAmt, k);
+            }
+
+            return rate;
+        }
+
+         public static float GetCookMinTemp(CookType type)
+        {
+            if(type == CookType.Snow) //is snow
+            {
+                return 1f;
+               
+            }
+            else if(type == CookType.Water) //is water boiling
+            {
+                return 115f;     
+            }
+            else return 100f;
         }
 
         //other methods

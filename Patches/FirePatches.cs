@@ -285,6 +285,25 @@ namespace ImprovedFires.Patches
             }
         }
 
+        [HarmonyPatch(typeof(Fire), nameof(Fire.IsBurning))]
+        internal static class Fire_IsBurning
+        {
+            public static void Postfix(Fire __instance, ref bool __result)
+            {
+
+                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+
+                if (__instance.m_IsPerpetual || iFire == null) { return; }
+                if (iFire.fireSim.state != Enums.FireState.None)
+                {
+                    __result = true;
+                }
+                else __result = false;
+            }
+        }
+
+
+
         [HarmonyPatch(typeof(Fire), nameof(Fire.GetRemainingLifeTimeSeconds))]
 
         public class GetEstimatedDurationSeconds
