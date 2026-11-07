@@ -11,9 +11,9 @@ namespace ImprovedFires.Simulation
 
         public List<FireFuelItem> fuelPool = new List<FireFuelItem>();
 
+        public float ambientTemperature; 
         public float totalExternalFireTemperature;
         public float totalFireTemperature;
-
         public float cookingSlotTemperature;
         private float corePower;
         private float totalRadiantPower;
@@ -82,7 +82,7 @@ namespace ImprovedFires.Simulation
             emberPower = 0;
             unlitFuelCount = 0;
 
-            burnRateMult = Mathf.Clamp(Mathf.Pow(totalFireTemperature / BASELINE_INTERNAL_TEMP, 0.4f), 0.5f, 1.5f);
+            burnRateMult = Mathf.Clamp(Mathf.Pow(Mathf.Max(0f, totalFireTemperature) / BASELINE_INTERNAL_TEMP, 0.4f), 0.5f, 1.5f);
 
             foreach (FireFuelItem fuel in fuelPool)
             {
@@ -123,7 +123,7 @@ namespace ImprovedFires.Simulation
 
             totalFireTemperature = CalculateTemperatureSmoothing(totalFireTemperature, targetTemp, timeConstant, dt);
 
-            float targetCookingTemp = totalFireTemperature * COOKING_HEAT_TRANSFER_FACTOR;
+            float targetCookingTemp = Mathf.Lerp(ambientTemperature, totalFireTemperature, COOKING_HEAT_TRANSFER_FACTOR);
 
              float cookTimeConstant = targetCookingTemp > cookingSlotTemperature
                 ? COOK_HEAT_TIME_CONSTANT
@@ -202,14 +202,8 @@ namespace ImprovedFires.Simulation
         //temperature methods
         private float CalculateTemperature()
         {
-            if (corePower <= 0)
-                return 20f; // ambient, maybe modify this by the air temp
-
-            float ratio = corePower / BASELINE_POWER;
-
-            float temp = BASELINE_INTERNAL_TEMP * Mathf.Pow(ratio, 0.35f);
-
-            return Mathf.Clamp(temp, 20f, 1200f);
+           float rise = BASELINE_INTERNAL_TEMP * Mathf.Pow(corePower / BASELINE_POWER, 0.35f);
+           return ambientTemperature + Mathf.Clamp(rise, 0f, 1200f);
         }
 
         public float CalculateExternalTargetTemperature()

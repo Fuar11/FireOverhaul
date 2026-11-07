@@ -55,6 +55,8 @@ namespace ImprovedFires.Component
                 return;
             }
 
+            fireSim.ambientTemperature = GameManager.GetWeatherComponent().GetCurrentTemperatureWithoutHeatSources();
+
             FireState oldState = fireSim.state;
 
             int i = 0;

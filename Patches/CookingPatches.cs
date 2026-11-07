@@ -67,15 +67,10 @@ namespace ImprovedFires.Patches
                 __state = iFire.fireSim.CalculateCookSpeed(type);
 
                 if (__instance.AttachedFireIsBurning())   // only when vanilla is about to add time itself
-{
-                float dtHours = GameManager.GetTimeOfDayComponent().GetTODHours(Time.deltaTime);
-                __instance.m_CookingElapsedHours += dtHours * (__state - 1f);
-}
-                /**Main.Logger.Log($"Original cook time is {cookTimeMinutes}", ComplexLogger.FlaggedLoggingLevel.Debug);
-
-                cookTimeMinutes /= rate;
-                Main.Logger.Log($"New cook time is {cookTimeMinutes}", ComplexLogger.FlaggedLoggingLevel.Debug);
-                readyTimeMinutes /= readyTimeMinutes != 1f ? rate : 1f; //this ensures that if water is melting, once it reaches it's melted state, it gets set to boiling right away **/
+                {
+                    float dtHours = GameManager.GetTimeOfDayComponent().GetTODHours(Time.deltaTime);
+                    __instance.m_CookingElapsedHours += dtHours * (__state - 1f);
+                }
                 
             }
 
@@ -103,7 +98,6 @@ namespace ImprovedFires.Patches
                 if(iFire == null) return;
 
                 __result += " - " + Utils.GetHeatIncreaseText(iFire.fireSim.cookingSlotTemperature, true, __instance.m_FireBeingUsed);
-                Main.Logger.Log($"Display test for cooking pot item {__result}", ComplexLogger.FlaggedLoggingLevel.Debug);
             }
 
         }
