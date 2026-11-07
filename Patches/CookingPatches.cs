@@ -51,8 +51,10 @@ namespace ImprovedFires.Patches
 
         [HarmonyPatch(typeof(CookingPotItem), nameof(CookingPotItem.UpdateCookingTimeAndState))]
         internal static class CookingPotItem_UpdateCookingTimeAndState {
-            public static void Prefix(CookingPotItem __instance, ref float cookTimeMinutes, ref float readyTimeMinutes)
+
+            public static void Prefix(CookingPotItem __instance, out float __state) //__state is the rate
             {
+                __state = 1f;
                 //readyTimeMinutes is actually how long it takes for the item to burn once it's cooked
                 if(__instance.m_FireBeingUsed == null) return;
 
@@ -62,15 +64,29 @@ namespace ImprovedFires.Patches
 
                 CookType type = GetCookType(__instance);
             
-                float rate = iFire.fireSim.CalculateCookSpeed(type);
+                __state = iFire.fireSim.CalculateCookSpeed(type);
 
-                Main.Logger.Log($"Original cook time is {cookTimeMinutes}", ComplexLogger.FlaggedLoggingLevel.Debug);
+                if (__instance.AttachedFireIsBurning())   // only when vanilla is about to add time itself
+{
+                float dtHours = GameManager.GetTimeOfDayComponent().GetTODHours(Time.deltaTime);
+                __instance.m_CookingElapsedHours += dtHours * (__state - 1f);
+}
+                /**Main.Logger.Log($"Original cook time is {cookTimeMinutes}", ComplexLogger.FlaggedLoggingLevel.Debug);
 
                 cookTimeMinutes /= rate;
                 Main.Logger.Log($"New cook time is {cookTimeMinutes}", ComplexLogger.FlaggedLoggingLevel.Debug);
-                readyTimeMinutes /= readyTimeMinutes != 1f ? rate : 1f; //this ensures that if water is melting, once it reaches it's melted state, it gets set to boiling right away
+                readyTimeMinutes /= readyTimeMinutes != 1f ? rate : 1f; //this ensures that if water is melting, once it reaches it's melted state, it gets set to boiling right away **/
                 
             }
+
+            public static void Postfix(CookingPotItem __instance, float __state)
+            {
+                
+                if(__instance.m_CookingState == CookingPotItem.CookingState.Cooking) __instance.m_MinutesUntilCooked /= __state;
+                if(__instance.m_CookingState == CookingPotItem.CookingState.Ready) __instance.m_MinutesUntilRuined /= __instance.m_MinutesUntilRuined != Mathf.Infinity ? __state : 1f;
+
+            }
+
         }
 
         [HarmonyPatch(typeof(CookingPotItem), nameof(CookingPotItem.GetHoverText))]
