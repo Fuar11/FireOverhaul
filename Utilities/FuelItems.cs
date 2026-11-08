@@ -19,8 +19,8 @@ namespace ImprovedFires.Utilities
             if (name.ToLowerInvariant().Contains("softwood")) return new FireFuelItem(gi.name, "Cedar", FuelType.Wood, 3, 650, 4500f, 8_000_000f, 0.7f, 0.9f, 0.15f, gi.GetItemWeightKG().m_Units);
             if (name.ToLowerInvariant().Contains("hardwood")) return new FireFuelItem(gi.name, "Fir", FuelType.Wood, 5f, 720, 6500f, 19_000_000f, 0.7f, 0.9f, 0.18f, gi.GetItemWeightKG().m_Units);
             if (name.ToLowerInvariant().Contains("reclaimed")) return new FireFuelItem(gi.name, "Reclaimed Wood", FuelType.Wood, 1.5f, 550, 3500f, 4_000_000f, 0.65f, 0.88f, 0.1f, gi.GetItemWeightKG().m_Units);
-            if (name.ToLowerInvariant().Contains("stick")) return new FireFuelItem(gi.name, "Stick", FuelType.Stick, 1f, 300, 1750f, 1_850_000f, 0.85f, 0.95f, 0.08f, gi.GetItemWeightKG().m_Units);
-            if (name.ToLowerInvariant().Contains("torch")) return new FireFuelItem("GEAR_Stick", "Stick", FuelType.Stick, 1f, 300, 1750f, 1_850_000f, 0.85f, 0.95f, 0.08f, 0.1f);
+            if (name.ToLowerInvariant().Contains("stick")) return new FireFuelItem(gi.name, "Stick", FuelType.Stick, 2f, 300, 1450f, 1_250_000f, 0.85f, 0.95f, 0.08f, gi.GetItemWeightKG().m_Units);
+            if (name.ToLowerInvariant().Contains("torch")) return new FireFuelItem("GEAR_Stick", "Stick", FuelType.Stick, 4f, 300, 1750f, 1_850_000f, 0.85f, 0.95f, 0.08f, 0.1f);
             //if (name.ToLowerInvariant().Contains("charcoal")) return reclaimedWood;
             if (name.ToLowerInvariant().Contains("coal")) return new FireFuelItem(gi.name, "Coal", FuelType.Coal, 8, 800, 6000f, 20_500_000f, 0.2f, 0.95f, 0f, gi.GetItemWeightKG().m_Units);
             if (name.ToLowerInvariant().Contains("book")) return new FireFuelItem(gi.name, "Book", FuelType.Book, 2, 250, 3500f, 6_500_000f, 0.85f, 0.95f, 0.02f, gi.GetItemWeightKG().m_Units);
