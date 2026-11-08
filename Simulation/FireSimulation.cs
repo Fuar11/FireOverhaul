@@ -448,7 +448,7 @@ namespace ImprovedFires.Simulation
 
         private static bool IsRemovableFuel(FireFuelItem fuel)
         {
-            return fuel.burnAmount < 0.07f && fuel.type != FuelType.Paper && fuel.type != FuelType.Book;
+            return fuel.burnAmount < 0.07f && fuel.type != FuelType.Paper && fuel.type != FuelType.Book && fuel.type != FuelType.Organic && fuel.type != FuelType.Cloth;
         }
 
         public bool HasRemovableFuel() => fuelPool.Any(IsRemovableFuel);

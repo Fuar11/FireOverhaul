@@ -28,7 +28,9 @@ namespace ImprovedFires.Patches
 				gi.name.Contains("GEAR_NewsprintRoll") ||
 				gi.name.Contains("GEAR_PaperStack") ||
 				gi.name.Contains("GEAR_Newsprint") ||
-				gi.name.Contains("GEAR_CashBundle"))
+				gi.name.Contains("GEAR_CashBundle") ||
+                gi.name.Contains("GEAR_Cloth") ||
+				gi.name.Contains("GEAR_OldMansBeardHarvested"))
                 {
                    
                     if (!gi.m_FuelSourceItem)
@@ -36,7 +38,7 @@ namespace ImprovedFires.Patches
                         gi.m_FuelSourceItem = gi.gameObject.AddComponent<FuelSourceItem>();
                     }
 
-                    gi.m_FuelSourceItem.m_HeatIncrease = 5; // deg C none of this really matters
+                    gi.m_FuelSourceItem.m_FireStartSkillModifier = GetStartSkillBonusByName(gi.name);
                     gi.m_FuelSourceItem.m_BurnDurationHours = 0.05f;
                     gi.m_FuelSourceItem.m_IsTinder = false;
                     gi.m_FuelSourceItem.m_HeatInnerRadius = 1;
@@ -44,6 +46,25 @@ namespace ImprovedFires.Patches
 
                 }
             }
+
+            private static float GetStartSkillBonusByName(string name)
+            {
+                switch (name)
+                {
+                    case "GEAR_CattailTinder": return 40f;
+                    case "GEAR_Tinder": return 25f;
+                    case "GEAR_BarkTinder": return 30f;
+                    case "GEAR_NewsprintRoll":
+                    case "GEAR_Newsprint": return 35f;
+                    case "GEAR_PaperStack": return 30f;
+                    case "GEAR_CashBundle": return 35f;
+                    case "GEAR_Cloth": return 5f;
+                    case "GEAR_OldMansBeardHarvested": return 40f;
+                    default: return 10f;
+
+                }
+            }
+
         }
 
         [HarmonyPatch(typeof(Skill_Firestarting), nameof(Skill_Firestarting.TinderRequired))]

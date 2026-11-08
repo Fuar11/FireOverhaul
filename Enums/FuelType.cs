@@ -16,6 +16,8 @@ namespace ImprovedFires.Enums
         Paper = 4,
         Synthetic = 5,
         Book = 6,
+        Cloth = 7,
+        Organic = 8
 
     }
 }

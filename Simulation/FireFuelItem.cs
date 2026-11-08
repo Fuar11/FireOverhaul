@@ -143,6 +143,24 @@ namespace ImprovedFires.Simulation
                 coalsRadiantFraction = 0.65f;
                 embersRadiantFraction = 0.45f;
             }
+            else if (type == FuelType.Cloth)
+            {
+                coalsPowerFactor = 0.005f;
+                emberPowerFactor = 0.0005f;
+                coalsWeightFactor = 4;
+                burningRadiantFraction = 0.1f;
+                coalsRadiantFraction = 0.4f;
+                embersRadiantFraction = 0.2f;
+            }
+            else if (type == FuelType.Organic)
+            {
+                coalsPowerFactor = 0.005f;
+                emberPowerFactor = 0.0005f;
+                coalsWeightFactor = 4;
+                burningRadiantFraction = 0.05f;
+                coalsRadiantFraction = 0.1f;
+                embersRadiantFraction = 0.1f;
+            }
 
             coalsPowerOutput = maxPowerOutput * coalsPowerFactor;
             emberPowerOutput = maxPowerOutput * emberPowerFactor;
@@ -253,6 +271,7 @@ namespace ImprovedFires.Simulation
                 case FuelType.Coal:
                      float t = Mathf.Clamp01(burnAmount / coalsThreshold);
                     return Mathf.Lerp(0.3f, 1f, t);
+                case FuelType.Organic:
                 case FuelType.Paper:
                     return Mathf.Pow(1f - burnAmount, 1.5f);
                 case FuelType.Book:
