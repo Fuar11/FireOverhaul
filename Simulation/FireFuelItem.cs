@@ -46,6 +46,7 @@ namespace ImprovedFires.Simulation
         public float coalsAmount = 0f; //amount of fuel consumed when it is coals (a fraction of the total fuel)
         public float embersAmount = 0f;
 
+      
         //weighing
 
         public int coalsWeightFactor;
@@ -59,6 +60,12 @@ namespace ImprovedFires.Simulation
         public const float AIRFLOW_EXP_BURNING = 1.0f;
         public const float AIRFLOW_EXP_COALS = 1.5f;
         public const float AIRFLOW_EXP_EMBERS = 1.5f;
+
+        //used as airflow control for open fires
+        public float energyRemainingAsFlame => state == FireFuelItemState.Burning
+        ? Mathf.Max(0f, (coalsThreshold - burnAmount) * energyContent)
+        : 0f;
+
 
         public FireFuelItem(string gearName, string name, FuelType type, float timeToIgniteAtTemp, float ignitionTemp, float maxPowerOutput, float energyContent, float coalsThreshold, float embersThreshold, float charcoalYield, float fuelMass)
         {
@@ -224,10 +231,8 @@ namespace ImprovedFires.Simulation
             }
             
             
-            remainingEnergy -= currentPowerOutput * gameDeltaTime; //this may need adjustment, not sure yet, deltaTime always confuses me
-
+            remainingEnergy -= currentPowerOutput * gameDeltaTime; 
             burnAmount = 1f - (remainingEnergy / energyContent);
-
         }
 
         public float CalculateCombustionCurve()

@@ -105,11 +105,23 @@ namespace ImprovedFires.Simulation
             emberPower = 0;
             unlitFuelCount = 0;
 
+
+
             burnRateMult = Mathf.Clamp(Mathf.Pow(Mathf.Max(0f, totalFireTemperature) / BASELINE_INTERNAL_TEMP, 0.4f), 0.5f, 1.5f);
+
+            float totalEnergyRemainingAsFlame = 0f;
+            float flamingEnergyDifference = 0f; //energy difference of all burning fuel before and after this step
 
             foreach (FireFuelItem fuel in fuelPool)
             {
+
+                totalEnergyRemainingAsFlame += fuel.energyRemainingAsFlame;
+                float energyBefore = fuel.remainingEnergy;
+                bool burningBefore = fuel.state == FireFuelItemState.Burning;
+
                 fuel.UpdateStats(this, false, dt);
+                
+                if(burningBefore) flamingEnergyDifference += energyBefore - fuel.remainingEnergy;
 
                 int coalsWeight = fuel.state == FireFuelItemState.Coals ? fuel.coalsWeightFactor : 1;
                 float weightedAmount = fuel.currentPowerOutput * coalsWeight;
@@ -184,6 +196,20 @@ namespace ImprovedFires.Simulation
             if (state != FireState.Starting && state != FireState.None)
             {
                 state = SetState();
+            }
+
+            if(type != FireType.WoodStove && type != FireType.Forge)
+            {
+                if (totalEnergyRemainingAsFlame <= 0f)
+                {
+                    airflowControl = 1f;
+                }
+                else
+                {
+                    float burnedFraction = Mathf.Clamp01(flamingEnergyDifference / totalEnergyRemainingAsFlame);
+                    float airflowDifference = 1f - airflowControl;
+                    airflowControl = 1f - airflowDifference * (1f - burnedFraction);
+                }
             }
 
             //Main.Logger.Log($"core {totalFireTemperature:0} | power {corePower:0} | coalShare {coalShareDebug:0.00} | limit {ambientTemperature + riselimitDebug:0}", ComplexLogger.FlaggedLoggingLevel.Debug);
