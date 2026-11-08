@@ -79,7 +79,9 @@ namespace ImprovedFires.Patches
                 //__instance.MaybeBlowOutFromWind(); this needs a patch
                 __instance.UpdateFireAudio();
 
-                //NEEDS FIXING. FIRES DONT GIVE ANY LIGHT CURRENTLY
+                //needed for lighting
+                __instance.m_ElapsedOnTODSeconds = 0f;
+                __instance.m_MaxOnTODSeconds = iFire.GetDurationEstimate();
 
                 if (iFire.fireSim.state == Enums.FireState.Raging && iFire.changeFX)
                 {
@@ -316,7 +318,6 @@ namespace ImprovedFires.Patches
                 if (iFire.fireSim.state > Enums.FireState.Embers)
                 {
                     float num = iFire.GetDurationEstimate();
-                    __instance.m_ElapsedOnTODSeconds = num;
                     __result = num;
                 }
                 else
