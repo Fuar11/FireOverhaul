@@ -392,5 +392,26 @@ namespace ImprovedFires.Patches
 
         }
 
+        [HarmonyPatch(typeof(Panel_ActionPicker), nameof(Panel_ActionPicker.DismantleFireCompleteCallback))]
+
+        internal class GetFuelBackWhenBreakdownCampfire
+        {
+            
+            private static void Postfix(Panel_ActionPicker __instance, ref bool success)
+            {
+                if (success)
+                {
+                    
+                    ImprovedFireComponent iFire = __instance.m_FireplaceInteractedWith.gameObject.GetComponent<ImprovedFireComponent>();
+
+                    if(iFire == null) return;
+                    iFire.RemoveUnburntFuel();
+
+                }
+            }
+
+        }
+
+
     }
 }
