@@ -135,7 +135,7 @@ namespace ImprovedFires.Patches
 
                 iFire.fireSim.AddFuelItem(fuelItem);
 
-                __instance.m_HeatSource.m_TempIncrease = iFire.fireSim.totalExternalFireTemperature;
+                __instance.m_HeatSource.m_TempIncrease = iFire.fireSim.totalRadiantTemperature;
                 //__instance.m_FuelHeatIncrease = iFire.totalExternalFireTemperature;
                 __instance.m_HeatSource.m_MaxTempIncreaseInnerRadius = iFire.fireSim.innerRadius; 
                 __instance.m_HeatSource.m_MaxTempIncreaseOuterRadius = iFire.fireSim.outerRadius;
@@ -229,8 +229,8 @@ namespace ImprovedFires.Patches
 
                 ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
                 __instance.m_HeatSource.TurnOn();
-                __instance.m_HeatSource.m_MaxTempIncrease = iFire.fireSim.totalExternalFireTemperature;
-                __instance.m_FuelHeatIncrease = iFire.fireSim.totalExternalFireTemperature;
+                __instance.m_HeatSource.m_MaxTempIncrease = iFire.fireSim.totalRadiantTemperature;
+                __instance.m_FuelHeatIncrease = iFire.fireSim.totalRadiantTemperature;
                 __instance.m_HeatSource.m_MaxTempIncreaseInnerRadius = iFire.fireSim.innerRadius;
                 __instance.m_HeatSource.m_MaxTempIncreaseOuterRadius = iFire.fireSim.outerRadius * __instance.GetFireOuterRadiusScale(); //maybe remove this
 
@@ -382,6 +382,25 @@ namespace ImprovedFires.Patches
                     string heat = Utils.GetHeatIncreaseText(iFire.fireSim.forgeTemperature, true, __instance.m_Fire);
                     baseInteraction.HoverText = baseInteraction.HoverText + "\n" + heat;
                 }
+
+            }
+
+        }
+
+        [HarmonyPatch(typeof(Forge), nameof(Forge.DisplayNotHotEnoughMessage))]
+
+        internal class ChangeTemperatureMessage
+        {
+            
+            public static void Prefix(Forge __instance)
+            {
+                
+                Fire fire = __instance.m_Fire;
+                if(fire == null) return;
+                ImprovedFireComponent iFire = fire.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+                if(iFire == null) return;
+
+                __instance.m_MinTemperatureForCrafting = FireSimulation.FORGE_TEMPERATURE;
 
             }
 

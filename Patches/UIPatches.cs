@@ -56,7 +56,7 @@ namespace ImprovedFires.Patches
 
                     values[4] = displayDuration ? "\n" : "";
 
-                    values[5] = Utils.GetHeatIncreaseText(iFire.fireSim.totalExternalFireTemperature, true, fire);
+                    values[5] = Utils.GetHeatIncreaseText(iFire.fireSim.totalRadiantTemperature, true, fire);
 
                     values[6] = " - ";
 

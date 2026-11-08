@@ -12,7 +12,7 @@ namespace ImprovedFires.Simulation
         public List<FireFuelItem> fuelPool = new List<FireFuelItem>();
 
         public float ambientTemperature;
-        public float totalExternalFireTemperature;
+        public float totalRadiantTemperature;
         public float totalFireTemperature;
         public float cookingSlotTemperature;
         public float forgeTemperature;
@@ -48,7 +48,7 @@ namespace ImprovedFires.Simulation
         public const float FORGE_MIN_ENERGY_HEAT_CONCENTRATION_THRESHOLD = 5_000_000f; //joules 
         public const float FORGE_MAX_ENERGY_HEAT_CONCENTRATION_THRESHOLD = 30_000_000f; //joules
 
-        //temperature control
+        //temperature change constants
         public const float TEMP_HEAT_TIME_CONSTANT = 30f;  // game seconds
         public const float TEMP_COOL_TIME_CONSTANT = 240f;
 
@@ -61,6 +61,7 @@ namespace ImprovedFires.Simulation
         public const float COOK_HEAT_TIME_CONSTANT = 120f; // game seconds
         public const float COOK_COOL_TIME_CONSTANT = 480f;
 
+        //output heat
         public const float MAX_RADIANT_HEAT = 80f;     // °C, vanilla max
         public const float RADIANCE_POWER_SCALE = 3000f; // watts of radiant power
 
@@ -134,12 +135,12 @@ namespace ImprovedFires.Simulation
                 }
             }
 
-            corePower = Mathf.Max(corePower, 0f);
+            corePower = Mathf.Max(corePower, 0f); //power can't be negative
 
             fuelPool.RemoveAll(f => f.state == Enums.FireFuelItemState.Ash);
 
-
-            float targetTemp = CalculateTemperature();
+            //core internal temperature
+            float targetTemp = CalculateCoreTemperature();
 
             float timeConstant = targetTemp > totalFireTemperature
                 ? TEMP_HEAT_TIME_CONSTANT
@@ -147,6 +148,7 @@ namespace ImprovedFires.Simulation
 
             totalFireTemperature = CalculateTemperatureSmoothing(totalFireTemperature, targetTemp, timeConstant, dt);
 
+            //cooking slot temperature
             float targetCookingTemp = Mathf.Lerp(ambientTemperature, totalFireTemperature, COOKING_HEAT_TRANSFER_FACTOR);
 
             float cookTimeConstant = targetCookingTemp > cookingSlotTemperature
@@ -155,26 +157,27 @@ namespace ImprovedFires.Simulation
 
             cookingSlotTemperature = CalculateTemperatureSmoothing(cookingSlotTemperature, targetCookingTemp, cookTimeConstant, dt);
 
+            //forge temperature
             float targetForgeTemp = Mathf.Lerp(ambientTemperature, totalFireTemperature, FORGE_HEAT_TRANSFER_FACTOR);
 
             float forgeTimeConstant = targetForgeTemp > forgeTemperature ? FORGE_HEAT_TIME_CONSTANT : FORGE_COOL_TIME_CONSTANT;
 
             forgeTemperature = CalculateTemperatureSmoothing(forgeTemperature, targetForgeTemp, forgeTimeConstant, dt);
 
-            float targetTempExt = CalculateExternalTargetTemperature();
+            //radiant temperature
+            float targetTempExt = CalculateRadiantTemperature();
 
-            float extTimeConstant = targetTempExt > totalExternalFireTemperature
+            float extTimeConstant = targetTempExt > totalRadiantTemperature
                ? EXT_HEAT_TIME_CONSTANT
                : EXT_COOL_TIME_CONSTANT;
 
-            totalExternalFireTemperature = CalculateTemperatureSmoothing(totalExternalFireTemperature, targetTempExt, extTimeConstant, dt);
+            totalRadiantTemperature = CalculateTemperatureSmoothing(totalRadiantTemperature, targetTempExt, extTimeConstant, dt);
 
             SetInnerAndOuterRadius();
 
             if (state != FireState.Starting && state != FireState.None)
             {
                 state = SetState();
-                //do more effects based on temp
             }
 
             //Main.Logger.Log($"core {totalFireTemperature:0} | power {corePower:0} | coalShare {coalShareDebug:0.00} | limit {ambientTemperature + riselimitDebug:0}", ComplexLogger.FlaggedLoggingLevel.Debug);
@@ -231,20 +234,20 @@ namespace ImprovedFires.Simulation
         }
 
         //temperature methods
-        private float CalculateTemperature()
+        private float CalculateCoreTemperature()
         {
             float coalFactor = totalUnweightedPower > 0f ? totalCoalFuelPower / totalUnweightedPower : 0f;
             //coalShareDebug = coalFactor;
-            float riseLimit = Mathf.Lerp(MAX_WOOD_FIRE_TEMP, MAX_COAL_FIRE_TEMP, coalFactor);
+            float temperatureGainLimit = Mathf.Lerp(MAX_WOOD_FIRE_TEMP, MAX_COAL_FIRE_TEMP, coalFactor);
             //riselimitDebug = riseLimit;
 
             float heatConcentrationAmt = type == FireType.Forge ? GetForgeHeatConcentration() : heatConcentrationFactor;
 
-            float rise = BASELINE_INTERNAL_TEMP * Mathf.Pow(corePower * heatConcentrationAmt / BASELINE_POWER, 0.35f);
-            return ambientTemperature + Mathf.Min(rise, riseLimit);
+            float temperatureGain = BASELINE_INTERNAL_TEMP * Mathf.Pow(corePower * heatConcentrationAmt / BASELINE_POWER, 0.35f);
+            return ambientTemperature + Mathf.Min(temperatureGain, temperatureGainLimit);
         }
 
-        public float CalculateExternalTargetTemperature()
+        public float CalculateRadiantTemperature()
         {
             return MAX_RADIANT_HEAT * (1f - Mathf.Exp(-totalRadiantPower / RADIANCE_POWER_SCALE));
         }
@@ -258,7 +261,7 @@ namespace ImprovedFires.Simulation
 
         private void SetInnerAndOuterRadius()
         {
-            float heatScale = totalExternalFireTemperature / MAX_RADIANT_HEAT;
+            float heatScale = totalRadiantTemperature / MAX_RADIANT_HEAT;
             innerRadius = Mathf.Lerp(0.5f, 3f, heatScale);
             outerRadius = Mathf.Lerp(2f, 8f, heatScale);
         }
