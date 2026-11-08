@@ -92,7 +92,9 @@ namespace ImprovedFires.Patches
                 }
                 if (iFire.fireSim.state == Enums.FireState.Steady && iFire.changeFX)
                 {
-                    __instance.m_FX.TriggerStage(Il2Cpp.FireState.Starting_MediumBurn, true, true); 
+                    Il2Cpp.FireState visualState = Il2Cpp.FireState.Starting_MediumBurn;
+                    if(iFire.fireSim.type == FireType.Fireplace) visualState = Il2Cpp.FireState.FullBurn;
+                    __instance.m_FX.TriggerStage(visualState, true, true); 
                     iFire.changeFX = false;
                 }
                 if (iFire.fireSim.state == Enums.FireState.Dwindling && iFire.changeFX)

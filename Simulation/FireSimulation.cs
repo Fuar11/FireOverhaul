@@ -255,7 +255,7 @@ namespace ImprovedFires.Simulation
         //fuel methods
         public void AddFuelItem(FireFuelItem item)
         {
-            Main.Logger.Log($"Adding fuel item {item.name}", ComplexLogger.FlaggedLoggingLevel.Debug);
+            //Main.Logger.Log($"Adding fuel item {item.name}", ComplexLogger.FlaggedLoggingLevel.Debug);
             fuelPool.Add(item);
         }
 
