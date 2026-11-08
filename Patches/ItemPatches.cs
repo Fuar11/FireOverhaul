@@ -49,20 +49,18 @@ namespace ImprovedFires.Patches
 
             private static float GetStartSkillBonusByName(string name)
             {
-                switch (name)
-                {
-                    case "GEAR_CattailTinder": return 40f;
-                    case "GEAR_Tinder": return 25f;
-                    case "GEAR_BarkTinder": return 30f;
-                    case "GEAR_NewsprintRoll":
-                    case "GEAR_Newsprint": return 35f;
-                    case "GEAR_PaperStack": return 30f;
-                    case "GEAR_CashBundle": return 35f;
-                    case "GEAR_Cloth": return 5f;
-                    case "GEAR_OldMansBeardHarvested": return 40f;
-                    default: return 10f;
 
-                }
+                 if (name.Contains("GEAR_CattailTinder")) return 40f;
+				 if (name.Contains("GEAR_Tinder")) return 25f;
+				 if (name.Contains("GEAR_BarkTinder")) return 30f;
+				 if (name.Contains("GEAR_NewsprintRoll")) return 35f;
+				 if (name.Contains("GEAR_PaperStack")) return 30f;
+				 if (name.Contains("GEAR_Newsprint")) return 35f;
+				 if (name.Contains("GEAR_CashBundle")) return 35f;
+                 if (name.Contains("GEAR_Cloth")) return 5f;
+				 if (name.Contains("GEAR_OldMansBeardHarvested")) return 40f;
+                
+                return 10f;
             }
 
         }

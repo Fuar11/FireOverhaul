@@ -296,12 +296,12 @@ namespace ImprovedFires.Patches
             {
                 foreach (Transform node in panel.GetComponentsInChildren<Transform>(true))
                 {
-                    if (node.name == "Button_Action_Secondary" && IsUnderMouseBuffer(node)) return node;
+                    if (node.name == "Button_Action_Secondary" && IsUnderMouse(node)) return node;
                 }
                 return null;
             }
 
-            private static bool IsUnderMouseBuffer(Transform node)
+            private static bool IsUnderMouse(Transform node)
             {
                 for (Transform current = node.parent; current != null; current = current.parent)
                 {
@@ -411,7 +411,5 @@ namespace ImprovedFires.Patches
             }
 
         }
-
-
     }
 }
