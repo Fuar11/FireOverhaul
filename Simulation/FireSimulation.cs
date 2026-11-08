@@ -30,6 +30,9 @@ namespace ImprovedFires.Simulation
         public float innerRadius;
         public float outerRadius;
 
+        //wind
+        public bool windAffected;
+
         //airflow
         public float airflowControl = 1f;
 
@@ -57,7 +60,7 @@ namespace ImprovedFires.Simulation
         //temperature change constants
         public const float TEMP_HEAT_TIME_CONSTANT = 30f;  // game seconds
         public const float TEMP_COOL_TIME_CONSTANT = 240f;
-
+        public const float TEMP_WIND_AFFECT_AMOUNT = 300f; // °C, a high value to make high wind still punishing
         public const float FORGE_HEAT_TIME_CONSTANT = 120f; //for balance, heating up the forge doesn't take too long
         public const float FORGE_COOL_TIME_CONSTANT = 1000f; //but cooling down takes much longer
 
@@ -160,9 +163,11 @@ namespace ImprovedFires.Simulation
             //core internal temperature
             float targetTemp = CalculateCoreTemperature();
 
+            float windDependentCoolingConstant = windAffected ? TEMP_COOL_TIME_CONSTANT - 30f : TEMP_COOL_TIME_CONSTANT;
+
             float timeConstant = targetTemp > totalFireTemperature
                 ? TEMP_HEAT_TIME_CONSTANT
-                : TEMP_COOL_TIME_CONSTANT;
+                : windDependentCoolingConstant;
 
             totalFireTemperature = CalculateTemperatureSmoothing(totalFireTemperature, targetTemp, timeConstant, dt);
 
@@ -276,7 +281,8 @@ namespace ImprovedFires.Simulation
             float heatConcentrationAmt = type == FireType.Forge ? GetForgeHeatConcentration() : heatConcentrationFactor;
 
             float temperatureGain = BASELINE_INTERNAL_TEMP * Mathf.Pow(corePower * heatConcentrationAmt / BASELINE_POWER, 0.35f);
-            return ambientTemperature + Mathf.Min(temperatureGain, temperatureGainLimit);
+            float windTemperatureLoss = windAffected ? TEMP_WIND_AFFECT_AMOUNT : 0f;
+            return Mathf.Clamp(ambientTemperature + Mathf.Min(temperatureGain, temperatureGainLimit) - windTemperatureLoss, ambientTemperature, Mathf.Infinity);
         }
 
         public float CalculateRadiantTemperature()

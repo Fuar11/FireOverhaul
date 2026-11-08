@@ -202,6 +202,12 @@ namespace ImprovedFires.Simulation
                 currentPowerOutput = maxPowerOutput * CalculateCombustionCurve() * fireSim.burnRateMult;
                 currentPowerOutput *= Mathf.Pow(fireSim.airflow, AIRFLOW_EXP_BURNING);
 
+                if(fireSim.windAffected && fireSim.totalFireTemperature < FireSimulation.HOT_CORE_MIN)
+                {
+                    currentPowerOutput = 0;
+                    state = FireFuelItemState.Cold;
+                }
+
                 if (burnAmount >= coalsThreshold) state = FireFuelItemState.Coals;
             }
             else if(state == FireFuelItemState.Coals)

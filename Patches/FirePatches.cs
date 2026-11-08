@@ -76,7 +76,7 @@ namespace ImprovedFires.Patches
                 }
 
                 __instance.UpdateFireStage(); 
-                //__instance.MaybeBlowOutFromWind(); this needs a patch
+                __instance.MaybeBlowOutFromWind(); 
                 
                 if(iFire.fireSim.state == Enums.FireState.Starting) __instance.UpdateFireAudio();
                 else iFire.fireSim.CustomFireAudio(__instance);
@@ -86,7 +86,8 @@ namespace ImprovedFires.Patches
                 __instance.m_MaxOnTODSeconds = iFire.GetDurationEstimate();
 
                 if (iFire.fireSim.state == Enums.FireState.Raging && iFire.changeFX)
-                {
+                {     Il2Cpp.FireState visualState = Il2Cpp.FireState.FullBurn;
+                    if(iFire.fireSim.windAffected) visualState = Il2Cpp.FireState.Starting_MediumBurn;
                     __instance.m_FX.TriggerStage(Il2Cpp.FireState.FullBurn, true, true); //need something else here
                     iFire.changeFX = false;
                 }
@@ -94,6 +95,7 @@ namespace ImprovedFires.Patches
                 {
                     Il2Cpp.FireState visualState = Il2Cpp.FireState.Starting_MediumBurn;
                     if(iFire.fireSim.type == FireType.Fireplace) visualState = Il2Cpp.FireState.FullBurn;
+                    else if(iFire.fireSim.windAffected) visualState = Il2Cpp.FireState.Starting_TinderSmallFlame;
                     __instance.m_FX.TriggerStage(visualState, true, true); 
                     iFire.changeFX = false;
                 }
@@ -271,6 +273,55 @@ namespace ImprovedFires.Patches
                 //charcoal
                 __instance.m_NumGeneratedCharcoalPieces = iFire.fireSim.GetCharcoal(); 
                 __instance.FireStateSet(Il2Cpp.FireState.Off);
+            }
+
+        }
+
+        [HarmonyPatch(typeof(Fire), nameof(Fire.FireShouldBlowOutFromWind))]
+
+        internal class CanAddFuelToFireWhenBlowOut
+        {
+            public static bool Prefix () => false;
+        }
+
+        [HarmonyPatch(typeof(Fire), nameof(Fire.MaybeBlowOutFromWind))]
+
+        internal class BlowOutWind
+        {
+            
+            private static bool windAffected = false;
+            public static bool Prefix() => false;
+
+            public static void Postfix(Fire __instance)
+            {
+                
+                 ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+
+                if(iFire == null) return;
+
+                iFire.fireSim.windAffected = __instance.m_Campfire != null && ShouldBlowOutFromWindOverride(__instance);
+
+                if(iFire.fireSim.windAffected != windAffected)
+                { 
+                    iFire.RefreshDurationEstimate();
+                    windAffected = iFire.fireSim.windAffected;
+                }
+            }
+
+            private static bool ShouldBlowOutFromWindOverride(Fire fire)
+            {
+                
+                if (GameManager.GetWindComponent().GetSpeedMPH() < GameManager.GetFireManagerComponent().m_WindSpeedThatBlowsOutFires)
+                {
+                    return false;
+                }
+                Vector3 position = fire.transform.position;
+                position.y += 1f;
+                if (GameManager.GetWindComponent().IsPositionOccludedFromWind(position))
+                {
+                    return false;
+                }
+                return true;
             }
 
         }
