@@ -408,13 +408,19 @@ namespace ImprovedFires.Simulation
 
         }
 
+        private static bool IsRemovableFuel(FireFuelItem fuel)
+        {
+            return fuel.burnAmount < 0.07f && fuel.type != FuelType.Paper && fuel.type != FuelType.Book;
+        }
+
+        public bool HasRemovableFuel() => fuelPool.Any(IsRemovableFuel);
+
         public void RemoveUnburntFuel()
         {
-            List<FireFuelItem> unburntFuel = fuelPool.Where(x => x.burnAmount < 0.07f).ToList();
+            List<FireFuelItem> unburntFuel = fuelPool.Where(IsRemovableFuel).ToList();
 
             foreach(FireFuelItem fuel in unburntFuel)
             {
-                if(fuel.type == FuelType.Paper || fuel.type == FuelType.Book) continue;
                 GameManager.GetPlayerManagerComponent().InstantiateItemInPlayerInventory(fuel.gearName);
                 RemoveFuelItem(fuel);
             }

@@ -70,7 +70,7 @@ namespace ImprovedFires.Patches
                     ImprovedFireComponent? fire = GetFire(__instance);
                     float shown = fire != null ? fire.fireSim.GetAirflow(v) : v;
                     return $"{shown:0%}";
-                }, () => GetFire(__instance)?.fireSim.airflowControl ?? 1f, v => GetFire(__instance)?.UpdateAirflow(v));
+                    }, () => GetFire(__instance)?.fireSim.airflowControl ?? 1f, v => GetFire(__instance)?.UpdateAirflow(v));
                     if (airflowRow.Name != null)
                     {   //this moves the label towards the slider
                         Vector3 p = airflowRow.Name.transform.localPosition;
@@ -153,6 +153,9 @@ namespace ImprovedFires.Patches
                 ImprovedFireComponent? fire = Panel_FeedFire_AddSlider.GetFire(__instance);
                 SliderRow? row = Panel_FeedFire_AddSlider.airflowRow;
                 if (fire != null && row != null && row.Name != null) row.Name.text = fire.GetAirflowLabel();
+
+                RemoveFuelButton.Update(__instance);
+                CoreTempLabel.Update(__instance, fire);
 			}
 
             private static void SetFireFillAmount(Panel_FeedFire __instance)
@@ -187,6 +190,140 @@ namespace ImprovedFires.Patches
             }
 
 		}
+
+        // Shows the core fire temperature in the vanilla heat output stat, and renames its caption to match.
+        internal static class CoreTempLabel
+        {
+            private const string CAPTION = "Core Temp";
+            private const string VANILLA_CAPTION = "Heat Output";
+
+            private static UILabel? caption;
+
+            public static void Update(Panel_FeedFire panel, ImprovedFireComponent? fire)
+            {
+                if (fire == null || panel.m_Label_FireTemperature == null) return;
+
+                panel.m_Label_FireTemperature.text = Utils.GetHeatIncreaseText(fire.fireSim.totalFireTemperature, true, panel.m_FireplaceInteraction.Fire);
+
+                if (caption == null) RenameCaption(panel.m_Label_FireTemperature);
+            }
+
+            private static void RenameCaption(UILabel value)
+            {
+                // Nearest match first, in case the panel shows the same words somewhere else.
+                for (Transform current = value.transform.parent; current != null; current = current.parent)
+                {
+                    foreach (UILabel label in current.GetComponentsInChildren<UILabel>(true))
+                    {
+                        if (label.text == null || !label.text.Trim().Equals(VANILLA_CAPTION, StringComparison.OrdinalIgnoreCase)) continue;
+
+                        UILocalize localize = label.GetComponent<UILocalize>();
+                        if (localize != null) UnityEngine.Object.DestroyImmediate(localize); //it would put the vanilla text back
+
+                        label.text = CAPTION;
+                        caption = label;
+                        return;
+                    }
+
+                    if (current.GetComponent<Panel_FeedFire>() != null) return;
+                }
+            }
+        }
+
+        internal static class RemoveFuelButton
+        {
+            private const float OFFSET_FROM_TEMPLATE = -201f;
+
+            private static GameObject? button;
+
+            public static void Update(Panel_FeedFire panel)
+            {
+                if (button == null) Build(panel);
+                if (button == null) return;
+
+                ImprovedFireComponent? fire = Panel_FeedFire_AddSlider.GetFire(panel);
+                bool show = fire != null && fire.fireSim.HasRemovableFuel();
+                if (button.activeSelf != show) button.SetActive(show);
+            }
+
+            private static void Build(Panel_FeedFire panel)
+            {
+                Transform? template = FindTemplate(panel);
+
+                if (template == null || FindClickable(template.gameObject) == null) return;
+
+                GameObject holder = new GameObject("ImprovedFires Button Holder");
+                holder.SetActive(false);
+
+                GameObject copy = UnityEngine.Object.Instantiate(template.gameObject, holder.transform, false);
+                copy.name = "Button_RemoveUnburntFuel";
+
+                foreach (GenericButtonMouseSpawner spawner in copy.GetComponentsInChildren<GenericButtonMouseSpawner>(true))
+                {
+                    UnityEngine.Object.DestroyImmediate(spawner);
+                }
+                foreach (UILocalize localize in copy.GetComponentsInChildren<UILocalize>(true))
+                {
+                    UnityEngine.Object.DestroyImmediate(localize);
+                }
+
+                copy.transform.SetParent(template.parent, false);
+                UnityEngine.Object.Destroy(holder);
+
+                foreach (Transform node in copy.GetComponentsInChildren<Transform>(true))
+                {
+                    node.gameObject.layer = template.gameObject.layer;
+                }
+
+                Vector3 position = template.localPosition;
+                copy.transform.localPosition = new Vector3(position.x + OFFSET_FROM_TEMPLATE, position.y, position.z);
+
+                foreach (UILabel label in copy.GetComponentsInChildren<UILabel>(true))
+                {
+                    label.text = "Remove Unburnt Fuel";
+                }
+
+                UIButton clickable = FindClickable(copy)!;
+                clickable.onClick.Clear();
+                EventDelegate.Set(clickable.onClick, new Action(() => OnClick(panel)));
+                clickable.isEnabled = true;
+
+                copy.SetActive(false);
+                button = copy;
+            }
+
+            private static Transform? FindTemplate(Panel_FeedFire panel)
+            {
+                foreach (Transform node in panel.GetComponentsInChildren<Transform>(true))
+                {
+                    if (node.name == "Button_Action_Secondary" && IsUnderMouseBuffer(node)) return node;
+                }
+                return null;
+            }
+
+            private static bool IsUnderMouseBuffer(Transform node)
+            {
+                for (Transform current = node.parent; current != null; current = current.parent)
+                {
+                    if (current.name == "Buffer") return true;
+                }
+                return false;
+            }
+
+            private static UIButton? FindClickable(GameObject root)
+            {
+                foreach (UIButton candidate in root.GetComponentsInChildren<UIButton>(true))
+                {
+                    if (candidate.onClick.Count > 0) return candidate;
+                }
+                return null;
+            }
+
+            private static void OnClick(Panel_FeedFire panel)
+            {
+                Panel_FeedFire_AddSlider.GetFire(panel)?.RemoveUnburntFuel();
+            }
+        }
 
         [HarmonyPatch(typeof(Panel_FeedFire), nameof(Panel_FeedFire.RefreshFireDurationLabel))]
 
@@ -235,8 +372,6 @@ namespace ImprovedFires.Patches
                 iFire.RefreshDurationEstimate();
 
             }
-
-
         }
 
         [HarmonyPatch(typeof(Panel_FireStart), nameof(Panel_FireStart.OnCharcoalHarvest))]
