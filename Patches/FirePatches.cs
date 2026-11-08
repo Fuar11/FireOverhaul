@@ -77,7 +77,9 @@ namespace ImprovedFires.Patches
 
                 __instance.UpdateFireStage(); 
                 //__instance.MaybeBlowOutFromWind(); this needs a patch
-                __instance.UpdateFireAudio();
+                
+                if(iFire.fireSim.state == Enums.FireState.Starting) __instance.UpdateFireAudio();
+                else iFire.fireSim.CustomFireAudio(__instance);
 
                 //needed for lighting
                 __instance.m_ElapsedOnTODSeconds = 0f;
@@ -90,17 +92,17 @@ namespace ImprovedFires.Patches
                 }
                 if (iFire.fireSim.state == Enums.FireState.Steady && iFire.changeFX)
                 {
-                    __instance.m_FX.TriggerStage(Il2Cpp.FireState.FullBurn, true, true); 
+                    __instance.m_FX.TriggerStage(Il2Cpp.FireState.Starting_MediumBurn, true, true); 
                     iFire.changeFX = false;
                 }
                 if (iFire.fireSim.state == Enums.FireState.Dwindling && iFire.changeFX)
                 {
-                    __instance.m_FX.TriggerStage(Il2Cpp.FireState.Starting_MediumBurn, true, true);
+                    __instance.m_FX.TriggerStage(Il2Cpp.FireState.Starting_TinderSmallFlame, true, true);
                     iFire.changeFX = false;
                 }
                 if (iFire.fireSim.state == Enums.FireState.Coals && iFire.changeFX)
                 {
-                    __instance.m_FX.TriggerStage(Il2Cpp.FireState.Starting_TinderSmallFlame, true, true); //vanilla embers stage used to depict coals
+                    __instance.m_FX.TriggerStage(Il2Cpp.FireState.Starting_TinderSmolder, true, true); //vanilla embers stage used to depict coals
                     iFire.changeFX = false;
                 }
                 if(iFire.fireSim.state == Enums.FireState.Embers && iFire.changeFX)

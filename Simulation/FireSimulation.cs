@@ -1,3 +1,4 @@
+using Il2CppAK;
 using ImprovedFires.Enums;
 using FireState = ImprovedFires.Enums.FireState;
 
@@ -37,6 +38,11 @@ namespace ImprovedFires.Simulation
         public float heatConcentrationFactor = 1f;
         public float GetAirflow(float control) => Mathf.Lerp(airflowMin, 1f, control);
         public float airflow => GetAirflow(airflowControl);
+
+        //fire audio
+
+        public float currentVolume;
+        private const float AUDIO_BLEND_TIME = 1.5f; // real seconds
 
         //power
         public const float BASELINE_POWER = 10000f; // watts
@@ -424,6 +430,23 @@ namespace ImprovedFires.Simulation
                 GameManager.GetPlayerManagerComponent().InstantiateItemInPlayerInventory(fuel.gearName);
                 RemoveFuelItem(fuel);
             }
+        }
+
+        public void CustomFireAudio(Fire fire)
+        {            
+            float audioPower = 0f;
+
+            if(state == FireState.Raging) audioPower = 1f;
+            if(state == FireState.Steady) audioPower = 0.75f;
+            if(state == FireState.Dwindling) audioPower = 0.3f;
+            if(state == FireState.Coals) audioPower = 0.2f;
+            if(state == FireState.Embers) audioPower = 0.1f;
+
+            currentVolume = CalculateTemperatureSmoothing(currentVolume, audioPower, AUDIO_BLEND_TIME, Time.deltaTime); //reuse the same smoothing algorithm for temperature
+            
+            if (fire.m_FireLoop == 0) fire.PlayFireLoop(currentVolume * 100f);
+            else GameAudioManager.SetRTPCValue(GAME_PARAMETERS.FIREBLENDSTATE, currentVolume * 100f, fire.gameObject);
+
         }
 
         public FireSimulation Clone()
