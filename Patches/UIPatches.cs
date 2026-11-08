@@ -37,9 +37,9 @@ namespace ImprovedFires.Patches
 
                     if (iFire.fireSim.state == Enums.FireState.Embers) state = "Embers";
                     else if (iFire.fireSim.state == Enums.FireState.Coals) state = "Glowing Coals";
-                    else if (iFire.fireSim.state == Enums.FireState.Dwindling) state = "Dwindling Fire";
-                    else if (iFire.fireSim.state == Enums.FireState.Steady) state = "Steady Fire";
-                    else if (iFire.fireSim.state == Enums.FireState.Raging) state = "Raging Fire";
+                    else if (iFire.fireSim.state == Enums.FireState.Dwindling) state = "Dwindling Flames";
+                    else if (iFire.fireSim.state == Enums.FireState.Steady) state = "Steady Flames";
+                    else if (iFire.fireSim.state == Enums.FireState.Raging) state = "Raging Flames";
                     else state = "Unknown";
 
                     string[] values = new string[8];
