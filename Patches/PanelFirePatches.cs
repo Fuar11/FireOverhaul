@@ -218,5 +218,44 @@ namespace ImprovedFires.Patches
             }
 
         }
+
+        [HarmonyPatch(typeof(Panel_FeedFire), nameof(Panel_FeedFire.OnTakeTorch))]
+
+        internal class RemoveFuelOnTakeTorch
+        {
+            
+            private static void Postfix(Panel_FeedFire __instance)
+            {
+                
+                ImprovedFireComponent iFire = __instance.m_FireplaceInteraction.Fire.gameObject.GetComponent<ImprovedFireComponent>();
+
+                if(iFire == null) return;
+
+                iFire.fireSim.TakeTorch();
+                iFire.RefreshDurationEstimate();
+
+            }
+
+
+        }
+
+        [HarmonyPatch(typeof(Panel_FireStart), nameof(Panel_FireStart.OnCharcoalHarvest))]
+
+        internal class TakeUnburntFuelOnCharcoalHarvest
+        {
+            
+
+            private static void Postfix(Panel_FireStart __instance)
+            {
+                ImprovedFireComponent iFire = __instance.m_FireplaceInteraction.Fire.gameObject.GetComponent<ImprovedFireComponent>();
+
+                if(iFire == null) return;
+
+                iFire.RemoveUnburntFuel();
+
+            }
+
+        }
+
     }
 }

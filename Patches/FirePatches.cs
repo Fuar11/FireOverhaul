@@ -130,8 +130,7 @@ namespace ImprovedFires.Patches
 
                 ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
 
-                FireFuelItem fuelItem = Utilities.FuelItems.GetFuelItemInstance(fuel.name);
-                fuelItem.gearItemRef = fuel;
+                FireFuelItem fuelItem = Utilities.FuelItems.GetFuelItemInstance(fuel);
 
                 iFire.fireSim.AddFuelItem(fuelItem);
 
@@ -189,7 +188,7 @@ namespace ImprovedFires.Patches
 
                     Main.Logger.Log($"Started fire using {fi.name}", ComplexLogger.FlaggedLoggingLevel.Debug);
 
-                    FireFuelItem fuelItem = Utilities.FuelItems.GetFuelItemInstance(fi.name);
+                    FireFuelItem fuelItem = Utilities.FuelItems.GetFuelItemInstance(fi);
 
                     if(fuelItem == null)
                     {
@@ -197,7 +196,6 @@ namespace ImprovedFires.Patches
                         return;
                     }
 
-                    fuelItem.gearItemRef = fi;
                     fuelItem.state = FireFuelItemState.Burning;
 
                     //find a way to add tinder here

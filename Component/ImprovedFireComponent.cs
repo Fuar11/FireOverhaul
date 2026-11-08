@@ -123,5 +123,11 @@ namespace ImprovedFires.Component
             else return "Airflow";
         }
 
+        public void RemoveUnburntFuel()
+        {
+            fireSim.RemoveUnburntFuel();
+            RefreshDurationEstimate();
+        }
+
     }
 }

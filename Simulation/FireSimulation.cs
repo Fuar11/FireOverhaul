@@ -371,7 +371,7 @@ namespace ImprovedFires.Simulation
         {
             foreach (FireFuelItem fuel in fuelPool)
             {
-                if (fuel.type == Enums.FuelType.Stick || fuel.name == "Reclaimed Wood" && fuel.burnAmount <= 0.3f)
+                if (fuel.type == Enums.FuelType.Stick && fuel.burnAmount <= 0.1f)
                 {
                     return true;
                 }
@@ -386,7 +386,7 @@ namespace ImprovedFires.Simulation
 
             foreach (FireFuelItem fuel in fuelPool)
             {
-                if (fuel.type == Enums.FuelType.Stick || fuel.name == "Reclaimed Wood" && fuel.burnAmount <= 0.3f)
+                if (fuel.type == Enums.FuelType.Stick && fuel.burnAmount <= 0.1f)
                 {
                     RemoveFuelItem(fuel);
                     return;
@@ -406,6 +406,18 @@ namespace ImprovedFires.Simulation
 
             return Mathf.CeilToInt(charcoalAmount / 0.1f);
 
+        }
+
+        public void RemoveUnburntFuel()
+        {
+            List<FireFuelItem> unburntFuel = fuelPool.Where(x => x.burnAmount < 0.07f).ToList();
+
+            foreach(FireFuelItem fuel in unburntFuel)
+            {
+                if(fuel.type == FuelType.Paper || fuel.type == FuelType.Book) continue;
+                GameManager.GetPlayerManagerComponent().InstantiateItemInPlayerInventory(fuel.gearName);
+                RemoveFuelItem(fuel);
+            }
         }
 
         public FireSimulation Clone()

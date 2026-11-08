@@ -12,9 +12,10 @@ namespace ImprovedFires.Simulation
 {
     public class FireFuelItem
     {
-        public GearItem gearItemRef = null;
+        public string gearName = "GEAR_Fuel";
         public string name = "default fuel item";
 
+        public float mass = 0;
         public FireFuelItemState state = FireFuelItemState.None;
         public FuelType type = FuelType.None;
 
@@ -59,8 +60,9 @@ namespace ImprovedFires.Simulation
         public const float AIRFLOW_EXP_COALS = 1.5f;
         public const float AIRFLOW_EXP_EMBERS = 1.5f;
 
-        public FireFuelItem(string name, FuelType type, float timeToIgniteAtTemp, float ignitionTemp, float maxPowerOutput, float energyContent, float coalsThreshold, float embersThreshold, float charcoalYield)
+        public FireFuelItem(string gearName, string name, FuelType type, float timeToIgniteAtTemp, float ignitionTemp, float maxPowerOutput, float energyContent, float coalsThreshold, float embersThreshold, float charcoalYield, float fuelMass)
         {
+            this.gearName = gearName;
             this.name = name;
             this.type = type;
             this.timeToIgniteAtTemp = timeToIgniteAtTemp;
@@ -70,6 +72,7 @@ namespace ImprovedFires.Simulation
             this.coalsThreshold = coalsThreshold;
             this.emberThreshold = embersThreshold;
             this.charcoalYield = charcoalYield;
+            this.mass = fuelMass;
 
             this.minIgnitionTemp = ignitionTemp * IGNITION_RANGE_FACTOR;
 
@@ -381,7 +384,7 @@ namespace ImprovedFires.Simulation
         public float GetCharcoalProduced()
         {
 
-            return gearItemRef.GetItemWeightKG().m_Units * charcoalYield * GetCarbonizationFactor();
+            return mass * charcoalYield * GetCarbonizationFactor();
 
         }
 
