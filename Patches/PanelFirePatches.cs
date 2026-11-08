@@ -170,7 +170,7 @@ namespace ImprovedFires.Patches
                 switch (iFire.fireSim.state)
                 {
                     case Enums.FireState.Embers:    target = Band(0.02f, 0.10f, iFire.fireSim.emberPower,   0f,           300f); break;
-                    case Enums.FireState.Coals:     target = Band(0.10f, 0.25f, iFire.fireSim.coalsPower, FireSimulation.COALS_MIN,    2000f); break;
+                    case Enums.FireState.Coals:     target = Band(0.10f, 0.25f, iFire.fireSim.coalsPower, FireSimulation.COALS_ENTER_EXIT,    2000f); break;
                     case Enums.FireState.Dwindling: target = Band(0.25f, 0.50f, iFire.fireSim.flamePower, FireSimulation.DWINDLE_ENTER, FireSimulation.STEADY_ENTER); break;
                     case Enums.FireState.Steady:    target = Band(0.50f, 0.85f, iFire.fireSim.flamePower, FireSimulation.STEADY_ENTER,  FireSimulation.RAGING_ENTER); break;
                     case Enums.FireState.Raging:    target = Band(0.85f, 1.00f, iFire.fireSim.flamePower, FireSimulation.RAGING_ENTER,  18000f); break;

@@ -31,7 +31,7 @@ namespace ImprovedFires.Component
 
             FireType type;
 
-            Transform t = transform.parent != null ? transform.parent : transform;
+            Transform t = transform.parent.transform.parent != null ? transform.parent.transform.parent : transform;
             string name = t.gameObject.name.ToLowerInvariant();
 
             if(name.Contains("stove")) type = FireType.WoodStove;

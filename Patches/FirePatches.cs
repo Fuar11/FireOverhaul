@@ -1,4 +1,5 @@
-﻿using ImprovedFires.Component;
+﻿using Il2CppTLD.Interactions;
+using ImprovedFires.Component;
 using ImprovedFires.Enums;
 using ImprovedFires.Simulation;
 using System;
@@ -330,5 +331,61 @@ namespace ImprovedFires.Patches
             }
 
         }
+
+        [HarmonyPatch(typeof(Forge), nameof(Forge.ForgeHotEnoughForUse))]
+
+        internal class AdjustForgeUseHeat
+        {
+            
+            private static void Postfix(Forge __instance, ref bool __result)
+            {
+                
+                Fire fire = __instance.m_Fire;
+                if(fire == null) return;
+                ImprovedFireComponent iFire = fire.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+                if(iFire == null) return;
+
+                if(iFire.fireSim.forgeTemperature >= FireSimulation.FORGE_TEMPERATURE) __result = true;
+                else __result = false;
+
+            }
+
+        }
+
+        [HarmonyPatch(typeof(Forge), nameof(Forge.UpdateInteraction))]
+
+        internal class AddForgeTemperatureHoverText
+        {
+            
+            public static bool Prefix(Forge __instance)
+            {
+                
+                 Fire fire = __instance.m_Fire;
+                if(fire == null) return true;
+                ImprovedFireComponent iFire = fire.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+                if(iFire == null) return true;
+
+                return false;
+            }
+            public static void Postfix(Forge __instance, ref BaseInteraction baseInteraction)
+            {
+                
+                 Fire fire = __instance.m_Fire;
+                if(fire == null) return;
+                ImprovedFireComponent iFire = fire.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+                if(iFire == null) return;
+
+                baseInteraction.HoverText = Localization.Get(baseInteraction.m_DefaultHoverText.m_LocalizationID);
+
+                if (iFire.fireSim.forgeTemperature > 0f)
+                {
+                    string heat = Utils.GetHeatIncreaseText(iFire.fireSim.forgeTemperature, true, __instance.m_Fire);
+                    baseInteraction.HoverText = baseInteraction.HoverText + "\n" + heat;
+                }
+
+            }
+
+        }
+
     }
 }

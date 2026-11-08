@@ -20,7 +20,7 @@ namespace ImprovedFires.Utilities
             if (name.ToLowerInvariant().Contains("stick")) return new FireFuelItem("Stick", FuelType.Stick, 1f, 300, 1750f, 1_850_000f, 0.85f, 0.95f, 0.08f);;
             if (name.ToLowerInvariant().Contains("torch")) return new FireFuelItem("Stick", FuelType.Stick, 1f, 300, 1750f, 1_850_000f, 0.85f, 0.95f, 0.08f);;
             //if (name.ToLowerInvariant().Contains("charcoal")) return reclaimedWood;
-            if (name.ToLowerInvariant().Contains("coal")) return new FireFuelItem("Coal", FuelType.Coal, 10, 800, 6000f, 20_500_000f, 0.2f, 0.95f, 0f);;
+            if (name.ToLowerInvariant().Contains("coal")) return new FireFuelItem("Coal", FuelType.Coal, 8, 800, 6000f, 20_500_000f, 0.2f, 0.95f, 0f);;
             if (name.ToLowerInvariant().Contains("book")) return new FireFuelItem("Book", FuelType.Book, 2, 250, 3500f, 6_500_000f, 0.85f, 0.95f, 0.02f);;
             if (name.ToLowerInvariant().Contains("firelog")) return new FireFuelItem("Firelog", FuelType.Synthetic, 3f, 350, 5500f, 36_000_000f, 0.75f, 0.95f, 0.05f);;
 

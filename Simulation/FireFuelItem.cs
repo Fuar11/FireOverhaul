@@ -152,8 +152,8 @@ namespace ImprovedFires.Simulation
             heatDrainPower = 0f;
             if ((state == FireFuelItemState.Cold || state == FireFuelItemState.Heating) && preheatEnergyRemaining > 0f && gameDeltaTime > 0f)
             {
-                float absorbtion = maxPowerOutput * HEAT_DRAIN_RATE * Mathf.Clamp01(fireSim.totalFireTemperature / ignitionTemp);
-                heatDrainPower = Mathf.Min(absorbtion, preheatEnergyRemaining / gameDeltaTime);
+                float absorption = maxPowerOutput * HEAT_DRAIN_RATE * Mathf.Clamp01(fireSim.totalFireTemperature / ignitionTemp);
+                heatDrainPower = Mathf.Min(absorption, preheatEnergyRemaining / gameDeltaTime);
                 preheatEnergyRemaining -= heatDrainPower * gameDeltaTime;
             }
 
