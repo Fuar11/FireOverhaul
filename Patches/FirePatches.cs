@@ -89,8 +89,11 @@ namespace ImprovedFires.Patches
                 if (iFire.fireSim.state == Enums.FireState.Raging && iFire.changeFX)
                 {     Il2Cpp.FireState visualState = Il2Cpp.FireState.FullBurn;
                     if(iFire.fireSim.windAffected) visualState = Il2Cpp.FireState.Starting_MediumBurn;
-                    __instance.m_FX.TriggerStage(Il2Cpp.FireState.FullBurn, true, true); //need something else here
+                    __instance.m_FX.TriggerStage(visualState, true, true); //need something else here
                     iFire.changeFX = false;
+
+                    if(visualState == Il2Cpp.FireState.FullBurn) iFire.fireSim.targetBrightness = 1.2f;
+                    else iFire.fireSim.targetBrightness = 1f;
                 }
                 if (iFire.fireSim.state == Enums.FireState.Steady && iFire.changeFX)
                 {
@@ -99,21 +102,29 @@ namespace ImprovedFires.Patches
                     else if(iFire.fireSim.windAffected) visualState = Il2Cpp.FireState.Starting_TinderSmallFlame;
                     __instance.m_FX.TriggerStage(visualState, true, true); 
                     iFire.changeFX = false;
+
+                     if(visualState == Il2Cpp.FireState.FullBurn) iFire.fireSim.targetBrightness = 1f;
+                    else iFire.fireSim.targetBrightness = 0.75f;
+
                 }
                 if (iFire.fireSim.state == Enums.FireState.Dwindling && iFire.changeFX)
                 {
                     __instance.m_FX.TriggerStage(Il2Cpp.FireState.Starting_TinderSmallFlame, true, true);
                     iFire.changeFX = false;
+                    iFire.fireSim.targetBrightness = 0.5f;
                 }
                 if (iFire.fireSim.state == Enums.FireState.Coals && iFire.changeFX)
                 {
                     __instance.m_FX.TriggerStage(Il2Cpp.FireState.Starting_TinderSmolder, true, true); //vanilla embers stage used to depict coals
                     iFire.changeFX = false;
+                    iFire.fireSim.targetBrightness = 0.25f;
                 }
                 if(iFire.fireSim.state == Enums.FireState.Embers && iFire.changeFX)
                 {
                     __instance.m_FX.TriggerStage(Il2Cpp.FireState.Starting_TinderSmolder, true, true); //vanilla starter use stage used to depict embers EXPERIMENTAL
-                    iFire.changeFX = false;}
+                    iFire.changeFX = false;
+                    iFire.fireSim.targetBrightness = 0.1f;
+                }
                 if (iFire.fireSim.state == Enums.FireState.None)
                 {
                     Main.Logger.Log("Fire is out!", ComplexLogger.FlaggedLoggingLevel.Debug);
@@ -124,6 +135,10 @@ namespace ImprovedFires.Patches
                     }
                 }
 
+                
+                iFire.fireSim.CustomFireBrightness();
+
+                __instance.m_LightIntensityMultiplier = iFire.fireSim.currentBrightness;
             }
         }
 
@@ -177,14 +192,28 @@ namespace ImprovedFires.Patches
         public class AddFuelToPool
         {
 
-            public static bool Prefix() => false;
+            public static bool Prefix(Fire __instance)
+            {
+                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+
+                if(iFire == null) return true;
+                else return false;
+            }
 
             public static void Postfix(Fire __instance, ref GearItem fuel)
             {
 
                 ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
 
+                if(iFire == null) return;
+
                 FireFuelItem fuelItem = Utilities.FuelItems.GetFuelItemInstance(fuel.name);
+
+                if(fuelItem == null)
+                {
+                    Main.Logger.Log("Unknown fuel item detected.", ComplexLogger.FlaggedLoggingLevel.Error);
+                    return;
+                }
 
                 iFire.fireSim.AddFuelItem(fuelItem);
 
@@ -210,6 +239,8 @@ namespace ImprovedFires.Patches
             public static void Postfix(Fire __instance)
             {
                 ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+
+                if(iFire == null) return;
 
                 Main.Logger.Log("Fire is starting!", ComplexLogger.FlaggedLoggingLevel.Debug);
                 iFire.fireSim.state = Enums.FireState.Starting;
@@ -252,8 +283,6 @@ namespace ImprovedFires.Patches
 
                     fuelItem.state = FireFuelItemState.Burning;
 
-                    //find a way to add tinder here
-
                     iFire.fireSim.AddFuelItem(fuelItem);
                     iFire.fireSim.state = Enums.FireState.Dwindling; 
 
@@ -274,17 +303,27 @@ namespace ImprovedFires.Patches
         public class FireTurnOnOverride
         {
 
-            public static bool Prefix() => false;
+            public static bool Prefix(Fire __instance)
+            {
+                
+                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+
+                if(iFire == null) return true;
+                else return false;
+            }
 
             public static void Postfix(Fire __instance, ref FuelSourceItem fuel)
             {
 
-                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); 
+
+                if(iFire == null) return;                
+                
                 __instance.m_HeatSource.TurnOn();
                 __instance.m_HeatSource.m_MaxTempIncrease = iFire.fireSim.totalRadiantTemperature;
                 __instance.m_FuelHeatIncrease = iFire.fireSim.totalRadiantTemperature;
                 __instance.m_HeatSource.m_MaxTempIncreaseInnerRadius = iFire.fireSim.innerRadius;
-                __instance.m_HeatSource.m_MaxTempIncreaseOuterRadius = iFire.fireSim.outerRadius * __instance.GetFireOuterRadiusScale(); //maybe remove this
+                __instance.m_HeatSource.m_MaxTempIncreaseOuterRadius = iFire.fireSim.outerRadius * __instance.GetFireOuterRadiusScale(); 
 
                 __instance.m_FX.TriggerStage(Il2Cpp.FireState.Starting_TinderSmallFlame, true, true);
 
@@ -300,7 +339,15 @@ namespace ImprovedFires.Patches
         public class FireTurnOffOverride
         {
 
-            public static bool Prefix() => false;
+            public static bool Prefix(Fire __instance)
+            {
+                
+                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+
+                if(iFire == null) return true;
+                else return false;
+
+            }
 
             public static void Postfix(Fire __instance)
             {
@@ -377,11 +424,21 @@ namespace ImprovedFires.Patches
         public class TakeTorchLogic
         {
 
-            public static bool Prefix() => false;
+            public static bool Prefix(Fire __instance)
+            {
+                
+                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+
+                if(iFire == null) return true;
+                else return false;
+
+            }
 
             public static void Postfix(Fire __instance, ref bool __result)
             {
                 ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+
+                if(iFire == null) return;
 
                 __result = iFire.fireSim.CanTakeTorch();
             }
@@ -505,6 +562,5 @@ namespace ImprovedFires.Patches
             }
 
         }
-
     }
 }

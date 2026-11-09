@@ -47,13 +47,18 @@ namespace ImprovedFires.Simulation
         //scene load
 
         public float timeAtLastSave;
-
         public bool checkTimePass;
+        public bool checkAmbientTemp;
 
         //fire audio
 
         public float currentVolume;
         private const float AUDIO_BLEND_TIME = 1.5f; // real seconds
+
+        //fire lighting
+
+        public float targetBrightness;
+        public float currentBrightness;
 
         //power
         public const float BASELINE_POWER = 10000f; // watts
@@ -489,6 +494,11 @@ namespace ImprovedFires.Simulation
 
         }
 
+        public void CustomFireBrightness()
+        {
+            currentBrightness = CalculateTemperatureSmoothing(currentBrightness, targetBrightness, 1.5f, Time.deltaTime);  
+        }
+
         public FireSimulation Clone()
         {
             FireSimulation clone = (FireSimulation)this.MemberwiseClone();
@@ -594,6 +604,7 @@ namespace ImprovedFires.Simulation
 
             timeAtLastSave = ldp.timeAtSave;
             checkTimePass = true;
+            checkAmbientTemp = false;
 
         }
 

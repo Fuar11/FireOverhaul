@@ -72,6 +72,14 @@ namespace ImprovedFires.Component
 
             fireSim.ambientTemperature = GameManager.GetWeatherComponent().GetCurrentTemperatureWithoutHeatSources();
 
+            if (!fireSim.checkAmbientTemp)
+            {
+                fireSim.totalFireTemperature = fireSim.ambientTemperature;
+                fireSim.forgeTemperature = fireSim.ambientTemperature;
+                fireSim.cookingSlotTemperature = fireSim.ambientTemperature;
+                fireSim.checkAmbientTemp = true;
+            }
+
             FireState oldState = fireSim.state;
 
             int i = 0;
