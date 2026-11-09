@@ -182,7 +182,7 @@ namespace ImprovedFires.Simulation
                 ? TEMP_HEAT_TIME_CONSTANT
                 : windDependentCoolingConstant;
 
-            totalFireTemperature = CalculateTemperatureSmoothing(totalFireTemperature, targetTemp, timeConstant, dt);
+            totalFireTemperature = CalculateSmoothing(totalFireTemperature, targetTemp, timeConstant, dt);
 
             //cooking slot temperature
             float targetCookingTemp = Mathf.Lerp(ambientTemperature, totalFireTemperature, COOKING_HEAT_TRANSFER_FACTOR);
@@ -191,14 +191,14 @@ namespace ImprovedFires.Simulation
                ? COOK_HEAT_TIME_CONSTANT
                : COOK_COOL_TIME_CONSTANT;
 
-            cookingSlotTemperature = CalculateTemperatureSmoothing(cookingSlotTemperature, targetCookingTemp, cookTimeConstant, dt);
+            cookingSlotTemperature = CalculateSmoothing(cookingSlotTemperature, targetCookingTemp, cookTimeConstant, dt);
 
             //forge temperature
             float targetForgeTemp = Mathf.Lerp(ambientTemperature, totalFireTemperature, FORGE_HEAT_TRANSFER_FACTOR);
 
             float forgeTimeConstant = targetForgeTemp > forgeTemperature ? FORGE_HEAT_TIME_CONSTANT : FORGE_COOL_TIME_CONSTANT;
 
-            forgeTemperature = CalculateTemperatureSmoothing(forgeTemperature, targetForgeTemp, forgeTimeConstant, dt);
+            forgeTemperature = CalculateSmoothing(forgeTemperature, targetForgeTemp, forgeTimeConstant, dt);
 
             //radiant temperature
             float targetTempExt = CalculateRadiantTemperature();
@@ -207,7 +207,7 @@ namespace ImprovedFires.Simulation
                ? EXT_HEAT_TIME_CONSTANT
                : EXT_COOL_TIME_CONSTANT;
 
-            totalRadiantTemperature = CalculateTemperatureSmoothing(totalRadiantTemperature, targetTempExt, extTimeConstant, dt);
+            totalRadiantTemperature = CalculateSmoothing(totalRadiantTemperature, targetTempExt, extTimeConstant, dt);
 
             SetInnerAndOuterRadius();
 
@@ -303,11 +303,11 @@ namespace ImprovedFires.Simulation
             return MAX_RADIANT_HEAT * (1f - Mathf.Exp(-totalRadiantPower / RADIANCE_POWER_SCALE));
         }
 
-        private float CalculateTemperatureSmoothing(float mainTemp, float targetTemp, float timeConstant, float dt)
+        private float CalculateSmoothing(float main, float target, float timeConstant, float dt)
         {
             float k = 1f - Mathf.Exp(-dt / timeConstant);
 
-            return Mathf.Lerp(mainTemp, targetTemp, k);
+            return Mathf.Lerp(main, target, k);
         }
 
         private void SetInnerAndOuterRadius()
@@ -487,7 +487,7 @@ namespace ImprovedFires.Simulation
             if(state == FireState.Coals) audioPower = 0.2f;
             if(state == FireState.Embers) audioPower = 0.1f;
 
-            currentVolume = CalculateTemperatureSmoothing(currentVolume, audioPower, AUDIO_BLEND_TIME, Time.deltaTime); //reuse the same smoothing algorithm for temperature
+            currentVolume = CalculateSmoothing(currentVolume, audioPower, AUDIO_BLEND_TIME, Time.deltaTime);
             
             if (fire.m_FireLoop == 0) fire.PlayFireLoop(currentVolume * 100f);
             else GameAudioManager.SetRTPCValue(GAME_PARAMETERS.FIREBLENDSTATE, currentVolume * 100f, fire.gameObject);
@@ -496,7 +496,7 @@ namespace ImprovedFires.Simulation
 
         public void CustomFireBrightness()
         {
-            currentBrightness = CalculateTemperatureSmoothing(currentBrightness, targetBrightness, 1.5f, Time.deltaTime);  
+            currentBrightness = CalculateSmoothing(currentBrightness, targetBrightness, 1.5f, Time.deltaTime);  
         }
 
         public FireSimulation Clone()
