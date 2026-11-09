@@ -467,7 +467,7 @@ namespace ImprovedFires.Simulation
                 charcoal += fuel.GetCharcoalProduced();
             }
 
-            return Mathf.CeilToInt(charcoal / 0.1f);
+            return Mathf.FloorToInt(charcoal / 0.1f);
 
         }
 

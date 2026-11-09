@@ -426,7 +426,7 @@ namespace ImprovedFires.Simulation
                     return 0.80f;
 
                 case FireFuelItemState.Ash:
-                    return 0.8f;
+                    return 1f;
             }
 
             return 0f;

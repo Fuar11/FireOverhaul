@@ -486,7 +486,7 @@ namespace ImprovedFires.Patches
             {
                 
                 Fire fire = __instance.m_Fire;
-                if(fire == null) return false;
+                if(fire == null) return true;
                 ImprovedFireComponent iFire = fire.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
                 if(iFire == null) return true;
 
