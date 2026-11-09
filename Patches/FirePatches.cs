@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Text.Json;
 
 namespace ImprovedFires.Patches
 {
@@ -27,7 +28,7 @@ namespace ImprovedFires.Patches
                     if(__instance.gameObject.name.ToLowerInvariant().Contains("invisiblefire")) return;
 
                     Main.Logger.Log("Adding fire component to fire object, wahoo!", ComplexLogger.FlaggedLoggingLevel.Debug);
-                    __instance.gameObject.AddComponent<ImprovedFireComponent>();
+                    ImprovedFireComponent iFire = __instance.gameObject.AddComponent<ImprovedFireComponent>();
                 }
 
                 GameManager.GetFireManagerComponent().m_MaxDurationHoursOfFire = float.PositiveInfinity;
@@ -126,6 +127,51 @@ namespace ImprovedFires.Patches
             }
         }
 
+        [HarmonyPatch(typeof(Fire), nameof(Fire.Serialize))]
+
+        internal class SaveFire
+        {
+            
+            public static void Postfix(Fire __instance)
+            {
+                
+
+                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+
+                if(iFire == null) return;
+
+                string guid = __instance.gameObject.GetComponent<ObjectGuid>().GetPDID();
+
+                Main.Logger.Log($"Saving fire {guid}", ComplexLogger.FlaggedLoggingLevel.Trace);
+                iFire.fireSim.Serialize(guid);
+
+            }
+
+        }
+
+        [HarmonyPatch(typeof(Fire), nameof(Fire.Deserialize))]
+
+        internal class LoadFire
+        {
+            
+            public static void Postfix(Fire __instance)
+            {
+
+                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+
+                if(iFire == null) return;
+
+                string guid = __instance.gameObject.GetComponent<ObjectGuid>().GetPDID();
+
+                Main.Logger.Log($"Loading fire {guid}", ComplexLogger.FlaggedLoggingLevel.Trace);
+                iFire.fireSim.Deserialize(guid);   
+                iFire.RefreshDurationEstimate();
+                iFire.changeFX = true;
+            }
+
+
+        }
+
         [HarmonyPatch(typeof(Fire), nameof(Fire.AddFuel))]
 
         public class AddFuelToPool
@@ -138,7 +184,7 @@ namespace ImprovedFires.Patches
 
                 ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
 
-                FireFuelItem fuelItem = Utilities.FuelItems.GetFuelItemInstance(fuel);
+                FireFuelItem fuelItem = Utilities.FuelItems.GetFuelItemInstance(fuel.name);
 
                 iFire.fireSim.AddFuelItem(fuelItem);
 
@@ -196,7 +242,7 @@ namespace ImprovedFires.Patches
 
                     Main.Logger.Log($"Started fire using {fi.name}", ComplexLogger.FlaggedLoggingLevel.Debug);
 
-                    FireFuelItem fuelItem = Utilities.FuelItems.GetFuelItemInstance(fi);
+                    FireFuelItem fuelItem = Utilities.FuelItems.GetFuelItemInstance(fi.name);
 
                     if(fuelItem == null)
                     {

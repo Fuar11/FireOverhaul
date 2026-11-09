@@ -1,5 +1,7 @@
+using System.Text.Json;
 using Il2CppAK;
 using ImprovedFires.Enums;
+using ImprovedFires.Utilities;
 using FireState = ImprovedFires.Enums.FireState;
 
 namespace ImprovedFires.Simulation
@@ -41,6 +43,12 @@ namespace ImprovedFires.Simulation
         public float heatConcentrationFactor = 1f;
         public float GetAirflow(float control) => Mathf.Lerp(airflowMin, 1f, control);
         public float airflow => GetAirflow(airflowControl);
+
+        //scene load
+
+        public float timeAtLastSave;
+
+        public bool checkTimePass;
 
         //fire audio
 
@@ -495,6 +503,98 @@ namespace ImprovedFires.Simulation
             clone.fuelPool = clonedList;
 
             return clone;
+        }
+
+        public void Serialize(string guid)
+        {
+
+            if (String.IsNullOrEmpty(guid))
+            {
+                Main.Logger.Log("Cannot save fire on empty guid!", ComplexLogger.FlaggedLoggingLevel.Error);
+                return;
+            }
+
+            FireSimulationSaveDataProxy sdp = new FireSimulationSaveDataProxy();
+            List<FireFuelItemSaveDataProxy> fuelPoolSdp = new List<FireFuelItemSaveDataProxy>();
+
+            foreach(FireFuelItem i in fuelPool)
+            {
+                FireFuelItemSaveDataProxy fuelItemSdp = new FireFuelItemSaveDataProxy();
+                fuelItemSdp.gearName = i.gearName;
+                fuelItemSdp.state = i.state;
+                fuelItemSdp.burnAmount = i.burnAmount;
+                fuelItemSdp.preheatEnergyRemaining = i.preheatEnergyRemaining;
+                fuelItemSdp.ignitionProgress = i.ignitionProgress;
+                fuelItemSdp.remainingEnergy = i.remainingEnergy;
+
+                fuelPoolSdp.Add(fuelItemSdp);
+            }
+
+            sdp.fuelPool = fuelPoolSdp;
+            sdp.airflowControl = airflowControl;
+            sdp.cookingSlotTemperature = cookingSlotTemperature;
+            sdp.forgeTemperature = forgeTemperature;
+            sdp.totalFireTemperature = totalFireTemperature;
+            sdp.totalRadiantTemperature = totalRadiantTemperature;
+            sdp.timeAtSave = GameManager.GetTimeOfDayComponent().GetHoursPlayedNotPaused();
+
+            sdp.state = state;
+
+            string data = JsonSerializer.Serialize(sdp);
+
+            SaveSystem.AddFire(guid, data);
+        }
+
+        public void Deserialize(string guid)
+        {
+            
+            if (String.IsNullOrEmpty(guid))
+            {
+                Main.Logger.Log("Cannot load fire on empty guid!", ComplexLogger.FlaggedLoggingLevel.Error);
+                return;
+            }
+
+            string data = SaveSystem.LoadFire(guid);
+
+            if (String.IsNullOrEmpty(data))
+            {
+                Main.Logger.Log($"No data saved for {guid}", ComplexLogger.FlaggedLoggingLevel.Debug);
+                return;
+            }
+
+            FireSimulationSaveDataProxy? ldp = JsonSerializer.Deserialize<FireSimulationSaveDataProxy>(data);
+
+            if(ldp == null)
+            {
+                Main.Logger.Log($"Failed to load fire data for {guid}", ComplexLogger.FlaggedLoggingLevel.Error);
+                return;
+            }
+
+            fuelPool.Clear();
+            foreach(FireFuelItemSaveDataProxy i in ldp.fuelPool)
+            {
+
+                FireFuelItem fuel = FuelItems.GetFuelItemInstance(i.gearName);    
+                if(fuel == null) continue;            
+                fuel.burnAmount = i.burnAmount;
+                fuel.state = i.state;
+                fuel.preheatEnergyRemaining = i.preheatEnergyRemaining;
+                fuel.ignitionProgress = i.ignitionProgress;
+                fuel.remainingEnergy = i.remainingEnergy;
+
+                fuelPool.Add(fuel);
+            }
+
+            state = ldp.state;
+            totalFireTemperature = ldp.totalFireTemperature;
+            totalRadiantTemperature = ldp.totalRadiantTemperature;
+            forgeTemperature = ldp.forgeTemperature;
+            cookingSlotTemperature = ldp.cookingSlotTemperature;
+            airflowControl = ldp.airflowControl;
+
+            timeAtLastSave = ldp.timeAtSave;
+            checkTimePass = true;
+
         }
 
     }

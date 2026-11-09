@@ -64,6 +64,12 @@ namespace ImprovedFires.Component
                 return;
             }
 
+            if(fireSim.checkTimePass && fireSim.timeAtLastSave > 0)
+            {
+                gameDeltaTime += Mathf.Max(0, (GameManager.GetTimeOfDayComponent().GetHoursPlayedNotPaused() - fireSim.timeAtLastSave) * 3600f);
+                fireSim.checkTimePass = false;
+            }
+
             fireSim.ambientTemperature = GameManager.GetWeatherComponent().GetCurrentTemperatureWithoutHeatSources();
 
             FireState oldState = fireSim.state;
