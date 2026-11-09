@@ -256,6 +256,7 @@ namespace ImprovedFires.Simulation
             
             
             remainingEnergy -= currentPowerOutput * gameDeltaTime; 
+            remainingEnergy = Mathf.Max(0, remainingEnergy);
             burnAmount = 1f - (remainingEnergy / energyContent);
         }
 
