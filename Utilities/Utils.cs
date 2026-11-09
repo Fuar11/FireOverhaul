@@ -18,7 +18,7 @@ namespace ImprovedFires
                 text2 = Localization.Get("GAMEPLAY_DegreesFUnits");
             }
             heatIncrease = fire.RoundOutput(heatIncrease);
-            string symbol = heatIncrease < 0 ? "" : "+";
+            string symbol = heatIncrease < 0 && !isRadiant ? "" : "+";
             if (Il2Cpp.Utils.IsZero(heatIncrease))
             {
                 return text + "+0" + text2;
