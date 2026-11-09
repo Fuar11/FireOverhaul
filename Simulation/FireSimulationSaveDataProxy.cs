@@ -1,7 +1,7 @@
-using ImprovedFires.Enums;
-using FireState = ImprovedFires.Enums.FireState;
+using FireOverhaul.Enums;
+using FireState = FireOverhaul.Enums.FireState;
 
-namespace ImprovedFires.Simulation
+namespace FireOverhaul.Simulation
 {
     public class FireSimulationSaveDataProxy
     {

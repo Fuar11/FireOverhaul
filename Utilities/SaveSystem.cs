@@ -1,6 +1,6 @@
-using ImprovedFires.Component;
+using FireOverhaul.Component;
 
-namespace ImprovedFires.Utilities
+namespace FireOverhaul.Utilities
 {
     
     public static class SaveSystem
@@ -64,7 +64,7 @@ namespace ImprovedFires.Utilities
         {
             private static void Postfix(SlotData slot)
             {
-                slot.TrySetData("improved_fires", SaveFires());
+                slot.TrySetData("fire_overhaul", SaveFires());
             }
         }
 
@@ -87,7 +87,7 @@ namespace ImprovedFires.Utilities
 
                     m_SavedFires.Clear();
                     Il2CppSystem.Collections.Generic.Dictionary<string, string> FiresData = null;
-                    if (slot.TryGetData("improved_fires", out FiresData))
+                    if (slot.TryGetData("fire_overhaul", out FiresData))
                     {
                         LoadFires(FiresData);
                     }

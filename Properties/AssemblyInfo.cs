@@ -1,4 +1,4 @@
-﻿using BuildInfo = ImprovedFires.BuildInfo;
+﻿using BuildInfo = FireOverhaul.BuildInfo;
 
 [assembly: AssemblyTitle(BuildInfo.Name)]
 [assembly: AssemblyDescription(BuildInfo.Description)]
@@ -11,7 +11,7 @@
 [assembly: AssemblyVersion(BuildInfo.Version)]
 [assembly: AssemblyFileVersion(BuildInfo.Version)]
 
-[assembly: MelonInfo(typeof(ImprovedFires.Main), BuildInfo.GUIName, BuildInfo.Version, BuildInfo.Author, BuildInfo.DownloadLink)]
+[assembly: MelonInfo(typeof(FireOverhaul.Main), BuildInfo.GUIName, BuildInfo.Version, BuildInfo.Author, BuildInfo.DownloadLink)]
 [assembly: MelonGame("Hinterland", "TheLongDark")]
 
 //[assembly: VerifyLoaderVersion(BuildInfo.MelonLoaderVersion, true)]

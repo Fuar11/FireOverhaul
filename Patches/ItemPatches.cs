@@ -1,4 +1,4 @@
-﻿using ImprovedFires.Utilities;
+﻿using FireOverhaul.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +8,7 @@ using Il2Cpp;
 using System.Collections;
 using Random = System.Random;
 
-namespace ImprovedFires.Patches
+namespace FireOverhaul.Patches
 {
     internal class ItemPatches : MonoBehaviour
     {

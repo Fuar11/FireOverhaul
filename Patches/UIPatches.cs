@@ -1,14 +1,14 @@
-﻿using ImprovedFires.Component;
+﻿using FireOverhaul.Component;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ImprovedFires.Utilities;
-using ImprovedFires.Simulation;
-using ImprovedFires.Enums;
+using FireOverhaul.Utilities;
+using FireOverhaul.Simulation;
+using FireOverhaul.Enums;
 
-namespace ImprovedFires.Patches
+namespace FireOverhaul.Patches
 {
     internal class UIPatches
     {
@@ -21,12 +21,12 @@ namespace ImprovedFires.Patches
             {
 
                 Fire fire = __instance.Fire;
-                ImprovedFireComponent iFire = fire.gameObject.GetComponent<ImprovedFireComponent>();
+                FireOverhaulComponent iFire = fire.gameObject.GetComponent<FireOverhaulComponent>();
                 string extraText = "";
 
                 if (fire == null || iFire == null)
                 {
-                    Main.Logger.Log("Fire or ImprovedFireComponent is null, skipping hover text override", ComplexLogger.FlaggedLoggingLevel.Error);
+                    Main.Logger.Log("Fire or FireOverhaulComponent is null, skipping hover text override", ComplexLogger.FlaggedLoggingLevel.Error);
                     return;
                 }
 
@@ -83,7 +83,7 @@ namespace ImprovedFires.Patches
                 Fire fire = __instance.m_Fire;
                 if (fire == null) return;
 
-                ImprovedFireComponent iFire = fire.GetComponent<ImprovedFireComponent>();
+                FireOverhaulComponent iFire = fire.GetComponent<FireOverhaulComponent>();
                     if (iFire == null) return;
 
                 if(__instance.m_Fire.m_FireState == Il2Cpp.FireState.Off && iFire.fireSim.cookingSlotTemperature > FireSimulation.GetCookMinTemp(CookType.Snow))
@@ -114,7 +114,7 @@ namespace ImprovedFires.Patches
                 Fire fire = __instance.m_Fire;
                 if (fire == null) return;
 
-                ImprovedFireComponent iFire = fire.GetComponent<ImprovedFireComponent>();
+                FireOverhaulComponent iFire = fire.GetComponent<FireOverhaulComponent>();
                     if (iFire == null) return;
 
                 if(__instance.m_Fire.m_FireState == Il2Cpp.FireState.Off && iFire.fireSim.cookingSlotTemperature > FireSimulation.GetCookMinTemp(CookType.Snow))

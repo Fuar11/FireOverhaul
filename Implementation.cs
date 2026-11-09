@@ -1,8 +1,8 @@
-using ImprovedFires.Utilities;
+using FireOverhaul.Utilities;
 using ComplexLogger;
 using MelonLoader;
 
-namespace ImprovedFires
+namespace FireOverhaul
 {
     public class Main : MelonMod
     {
@@ -11,7 +11,7 @@ namespace ImprovedFires
 
         public override void OnInitializeMelon()
         {
-            MelonLogger.Msg("Improved Fires is online!");
+            MelonLogger.Msg("Fire Overhaul is online!");
             Settings.OnLoad();
         }
     }

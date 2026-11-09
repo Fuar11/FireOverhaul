@@ -1,7 +1,7 @@
 ﻿using Il2CppTLD.Interactions;
-using ImprovedFires.Component;
-using ImprovedFires.Enums;
-using ImprovedFires.Simulation;
+using FireOverhaul.Component;
+using FireOverhaul.Enums;
+using FireOverhaul.Simulation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Text.Json;
 
-namespace ImprovedFires.Patches
+namespace FireOverhaul.Patches
 {
     internal class FirePatches
     {
@@ -28,7 +28,7 @@ namespace ImprovedFires.Patches
                     if(__instance.gameObject.name.ToLowerInvariant().Contains("invisiblefire")) return;
 
                     Main.Logger.Log("Adding fire component to fire object, wahoo!", ComplexLogger.FlaggedLoggingLevel.Debug);
-                    ImprovedFireComponent iFire = __instance.gameObject.AddComponent<ImprovedFireComponent>();
+                    FireOverhaulComponent iFire = __instance.gameObject.AddComponent<FireOverhaulComponent>();
                 }
 
                 GameManager.GetFireManagerComponent().m_MaxDurationHoursOfFire = float.PositiveInfinity;
@@ -45,7 +45,7 @@ namespace ImprovedFires.Patches
             public static bool Prefix(Fire __instance)
             {
                 
-                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>();
+                FireOverhaulComponent iFire = __instance.gameObject.GetComponent<FireOverhaulComponent>();
 
                 if(iFire == null) return true;
                 else return false;
@@ -54,7 +54,7 @@ namespace ImprovedFires.Patches
             public static void Postfix(Fire __instance)
             {
 
-                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); 
+                FireOverhaulComponent iFire = __instance.gameObject.GetComponent<FireOverhaulComponent>(); 
                 if (GameManager.m_IsPaused || GameManager.s_IsGameplaySuspended || iFire == null)
                 {
                     return;
@@ -152,7 +152,7 @@ namespace ImprovedFires.Patches
             {
                 
 
-                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+                FireOverhaulComponent iFire = __instance.gameObject.GetComponent<FireOverhaulComponent>(); //for now, might use GUID later
 
                 if(iFire == null) return;
 
@@ -173,7 +173,7 @@ namespace ImprovedFires.Patches
             public static void Postfix(Fire __instance)
             {
 
-                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+                FireOverhaulComponent iFire = __instance.gameObject.GetComponent<FireOverhaulComponent>(); //for now, might use GUID later
 
                 if(iFire == null) return;
 
@@ -195,7 +195,7 @@ namespace ImprovedFires.Patches
 
             public static bool Prefix(Fire __instance, ref GearItem fuel)
             {
-                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+                FireOverhaulComponent iFire = __instance.gameObject.GetComponent<FireOverhaulComponent>(); //for now, might use GUID later
 
                 if(iFire == null) return true;
 
@@ -229,7 +229,7 @@ namespace ImprovedFires.Patches
 
             public static void Postfix(Fire __instance)
             {
-                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+                FireOverhaulComponent iFire = __instance.gameObject.GetComponent<FireOverhaulComponent>(); //for now, might use GUID later
 
                 if(iFire == null) return;
 
@@ -247,7 +247,7 @@ namespace ImprovedFires.Patches
             public static void Postfix(Fire __instance, ref bool success)
             {
 
-                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+                FireOverhaulComponent iFire = __instance.gameObject.GetComponent<FireOverhaulComponent>(); //for now, might use GUID later
 
                 if(iFire == null) return;
 
@@ -300,7 +300,7 @@ namespace ImprovedFires.Patches
             public static bool Prefix(Fire __instance)
             {
                 
-                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); 
+                FireOverhaulComponent iFire = __instance.gameObject.GetComponent<FireOverhaulComponent>(); 
 
                 if(iFire == null) return true;                
                 
@@ -325,7 +325,7 @@ namespace ImprovedFires.Patches
             public static bool Prefix(Fire __instance)
             {
                 
-                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+                FireOverhaulComponent iFire = __instance.gameObject.GetComponent<FireOverhaulComponent>(); //for now, might use GUID later
 
                 if(iFire == null) return true;
 
@@ -362,7 +362,7 @@ namespace ImprovedFires.Patches
             public static void Postfix(Fire __instance)
             {
                 
-                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+                FireOverhaulComponent iFire = __instance.gameObject.GetComponent<FireOverhaulComponent>(); //for now, might use GUID later
 
                 if(iFire == null) return;
 
@@ -401,7 +401,7 @@ namespace ImprovedFires.Patches
             public static bool Prefix(Fire __instance, ref bool __result)
             {
                 
-              ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+              FireOverhaulComponent iFire = __instance.gameObject.GetComponent<FireOverhaulComponent>(); //for now, might use GUID later
 
                 if(iFire == null) return true;
 
@@ -418,7 +418,7 @@ namespace ImprovedFires.Patches
             public static void Postfix(Fire __instance, ref bool __result)
             {
 
-                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+                FireOverhaulComponent iFire = __instance.gameObject.GetComponent<FireOverhaulComponent>(); //for now, might use GUID later
 
                 if (__instance.m_IsPerpetual || iFire == null) { return; }
                 if (iFire.fireSim.state != Enums.FireState.None)
@@ -437,7 +437,7 @@ namespace ImprovedFires.Patches
         {
             public static void Postfix(Fire __instance, ref float __result)
             {
-                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+                FireOverhaulComponent iFire = __instance.gameObject.GetComponent<FireOverhaulComponent>(); //for now, might use GUID later
 
                 if(iFire == null) return;
 
@@ -467,7 +467,7 @@ namespace ImprovedFires.Patches
                 
                 Fire fire = __instance.m_Fire;
                 if(fire == null) return;
-                ImprovedFireComponent iFire = fire.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+                FireOverhaulComponent iFire = fire.gameObject.GetComponent<FireOverhaulComponent>(); //for now, might use GUID later
                 if(iFire == null) return;
 
                 if(iFire.fireSim.forgeTemperature >= FireSimulation.FORGE_TEMPERATURE) __result = true;
@@ -487,7 +487,7 @@ namespace ImprovedFires.Patches
                 
                 Fire fire = __instance.m_Fire;
                 if(fire == null) return true;
-                ImprovedFireComponent iFire = fire.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+                FireOverhaulComponent iFire = fire.gameObject.GetComponent<FireOverhaulComponent>(); //for now, might use GUID later
                 if(iFire == null) return true;
 
                 baseInteraction.HoverText = Localization.Get(baseInteraction.m_DefaultHoverText.m_LocalizationID);
@@ -512,7 +512,7 @@ namespace ImprovedFires.Patches
                 
                 Fire fire = __instance.m_Fire;
                 if(fire == null) return;
-                ImprovedFireComponent iFire = fire.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+                FireOverhaulComponent iFire = fire.gameObject.GetComponent<FireOverhaulComponent>(); //for now, might use GUID later
                 if(iFire == null) return;
 
                 __instance.m_MinTemperatureForCrafting = FireSimulation.FORGE_TEMPERATURE;

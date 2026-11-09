@@ -1,4 +1,4 @@
-namespace ImprovedFires.Enums
+namespace FireOverhaul.Enums
 {
     public enum FireType
     {

@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ImprovedFires.Utilities
+namespace FireOverhaul.Utilities
 {
     internal class SaveDataManager
     {
 
-        ModDataManager dm = new ModDataManager("Improved Fires", false);
+        ModDataManager dm = new ModDataManager("Fire Overhaul", false);
 
         public void Save(string data, string suffix)
         {

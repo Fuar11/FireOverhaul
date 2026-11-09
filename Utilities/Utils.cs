@@ -1,6 +1,6 @@
 using Random = System.Random;
 
-namespace ImprovedFires
+namespace FireOverhaul
 {
     public class Utils
     {

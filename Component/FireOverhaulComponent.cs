@@ -1,7 +1,7 @@
 ﻿using Il2Cpp;
-using ImprovedFires.Enums;
-using ImprovedFires.Simulation;
-using ImprovedFires.Utilities;
+using FireOverhaul.Enums;
+using FireOverhaul.Simulation;
+using FireOverhaul.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,12 +9,12 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UIElements.Experimental;
-using FireState = ImprovedFires.Enums.FireState;
+using FireState = FireOverhaul.Enums.FireState;
 
-namespace ImprovedFires.Component
+namespace FireOverhaul.Component
 {
     [RegisterTypeInIl2Cpp]
-    public class ImprovedFireComponent : MonoBehaviour
+    public class FireOverhaulComponent : MonoBehaviour
     {
 
         public FireSimulation fireSim;

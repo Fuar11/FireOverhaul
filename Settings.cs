@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ImprovedFires
+namespace FireOverhaul
 {
     internal class CustomSettings : JsonModSettings
     {
@@ -17,7 +17,7 @@ namespace ImprovedFires
         internal static void OnLoad()
         {
             settings = new CustomSettings();
-            settings.AddToModSettings("Improved Fires");
+            settings.AddToModSettings("Fire Overhaul");
         }
     }
 

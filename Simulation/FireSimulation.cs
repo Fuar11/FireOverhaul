@@ -1,10 +1,10 @@
 using System.Text.Json;
 using Il2CppAK;
-using ImprovedFires.Enums;
-using ImprovedFires.Utilities;
-using FireState = ImprovedFires.Enums.FireState;
+using FireOverhaul.Enums;
+using FireOverhaul.Utilities;
+using FireState = FireOverhaul.Enums.FireState;
 
-namespace ImprovedFires.Simulation
+namespace FireOverhaul.Simulation
 {
     public class FireSimulation
     {

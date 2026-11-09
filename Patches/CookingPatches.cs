@@ -1,8 +1,8 @@
-using ImprovedFires.Component;
-using ImprovedFires.Enums;
-using ImprovedFires.Simulation;
+using FireOverhaul.Component;
+using FireOverhaul.Enums;
+using FireOverhaul.Simulation;
 
-namespace ImprovedFires.Patches
+namespace FireOverhaul.Patches
 {
     
 
@@ -20,7 +20,7 @@ namespace ImprovedFires.Patches
                 
                 if(__instance.m_FireBeingUsed == null) return true;
 
-                ImprovedFireComponent iFire = __instance.m_FireBeingUsed.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+                FireOverhaulComponent iFire = __instance.m_FireBeingUsed.gameObject.GetComponent<FireOverhaulComponent>(); //for now, might use GUID later
 
                 if(iFire == null) return true;
                 else return false;
@@ -30,7 +30,7 @@ namespace ImprovedFires.Patches
                 
                 if(__instance.m_FireBeingUsed == null) return;
 
-                ImprovedFireComponent iFire = __instance.m_FireBeingUsed.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+                FireOverhaulComponent iFire = __instance.m_FireBeingUsed.gameObject.GetComponent<FireOverhaulComponent>(); //for now, might use GUID later
 
                 if(iFire == null){ 
                     return;
@@ -58,7 +58,7 @@ namespace ImprovedFires.Patches
                 //readyTimeMinutes is actually how long it takes for the item to burn once it's cooked
                 if(__instance.m_FireBeingUsed == null) return;
 
-                ImprovedFireComponent iFire = __instance.m_FireBeingUsed.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+                FireOverhaulComponent iFire = __instance.m_FireBeingUsed.gameObject.GetComponent<FireOverhaulComponent>(); //for now, might use GUID later
 
                 if(iFire == null) return;
 
@@ -94,7 +94,7 @@ namespace ImprovedFires.Patches
                 
                 if(__instance.m_FireBeingUsed == null) return;
 
-                ImprovedFireComponent iFire = __instance.m_FireBeingUsed.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+                FireOverhaulComponent iFire = __instance.m_FireBeingUsed.gameObject.GetComponent<FireOverhaulComponent>(); //for now, might use GUID later
                 if(iFire == null) return;
 
                 __result += " - " + Utils.GetHeatIncreaseText(iFire.fireSim.cookingSlotTemperature, false, __instance.m_FireBeingUsed);

@@ -1,6 +1,6 @@
-﻿using ImprovedFires.Component;
-using ImprovedFires.Enums;
-using ImprovedFires.Simulation;
+﻿using FireOverhaul.Component;
+using FireOverhaul.Enums;
+using FireOverhaul.Simulation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static ComplexLogger.Utilities.ConversionUtilities;
 
-namespace ImprovedFires.Simulation
+namespace FireOverhaul.Simulation
 {
     public class FireFuelItem
     {

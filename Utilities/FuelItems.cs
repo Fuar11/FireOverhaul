@@ -1,13 +1,13 @@
-﻿using ImprovedFires.Component;
+﻿using FireOverhaul.Component;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ImprovedFires.Enums;
-using ImprovedFires.Simulation;
+using FireOverhaul.Enums;
+using FireOverhaul.Simulation;
 
-namespace ImprovedFires.Utilities
+namespace FireOverhaul.Utilities
 {
     public class FuelItems
     {

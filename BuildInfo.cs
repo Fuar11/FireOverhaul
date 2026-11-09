@@ -1,4 +1,4 @@
-﻿namespace ImprovedFires
+﻿namespace FireOverhaul
 {
     public static class BuildInfo
     {
@@ -7,13 +7,13 @@
         */
         #region Mandatory
         /// <summary>The machine readable name of the mod (no special characters or spaces)</summary>
-        public const string Name                            = "ImprovedFires";
+        public const string Name                            = "FireOverhaul";
         /// <summary>Who made the mod</summary>
         public const string Author                          = "Fuar";
         /// <summary>Current version (Using Major.Minor.Build) </summary>
-        public const string Version                         = "1.0.0";
+        public const string Version                         = "0.9.0";
         /// <summary>Name used on GUI's, like ModSettings</summary>
-        public const string GUIName                         = "Improved Fires";
+        public const string GUIName                         = "Fire Overhaul";
         /// <summary>The minimum Melon Loader version that your mod requires</summary>
         //public const string MelonLoaderVersion              = "0.7.2";
         #endregion
@@ -27,11 +27,11 @@
         public const string DownloadLink                    = null;
         /// <summary>Copyright info</summary>
         /// <remarks>When updating the year, use the StartYear-CurrentYear format eg(Copyright © 2020-2023)</remarks>
-        public const string Copyright                       = "Copyright ©Fuar 2023";
+        public const string Copyright                       = "Copyright ©Fuar 2026";
         /// <summary>Trademark info</summary>
         public const string Trademark                       = null;
         /// <summary>Product Name (Generally use the Name)</summary>
-        public const string Product                         = "Reduced Loot";
+        public const string Product                         = "Fire Overhaul";
         /// <summary>Culture info</summary>
         public const string Culture                         = null;
         /// <summary>Priority of your mod. Most of the time you should not need to change this</summary>

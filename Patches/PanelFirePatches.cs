@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ImprovedFires.Component;
-using ImprovedFires.Simulation;
+using FireOverhaul.Component;
+using FireOverhaul.Simulation;
 using UnityEngine.UI;
-using ImprovedFires.Utilities;
+using FireOverhaul.Utilities;
 
-namespace ImprovedFires.Patches
+namespace FireOverhaul.Patches
 {
     internal class PanelFirePatches
     {
@@ -67,7 +67,7 @@ namespace ImprovedFires.Patches
                 if (go != null)
                 { 
                     airflowRow = new SliderRow(go, "Airflow", 0f, 1f, 21, v => {
-                    ImprovedFireComponent? fire = GetFire(__instance);
+                    FireOverhaulComponent? fire = GetFire(__instance);
                     float shown = fire != null ? fire.fireSim.GetAirflow(v) : v;
                     return $"{shown:0%}";
                     }, () => GetFire(__instance)?.fireSim.airflowControl ?? 1f, v => GetFire(__instance)?.UpdateAirflow(v));
@@ -88,7 +88,7 @@ namespace ImprovedFires.Patches
                 if (options == null || options.m_FieldOfViewSlider == null) return null;
 
                 // Inactive holder, so the copy's Awake doesn't run before we strip it.
-                GameObject holder = new GameObject("ImprovedFires Slider Template");
+                GameObject holder = new GameObject("FireOverhaul Slider Template");
                 UnityEngine.Object.DontDestroyOnLoad(holder);
                 holder.SetActive(false);
 
@@ -129,10 +129,10 @@ namespace ImprovedFires.Patches
                 }
             }
 
-            public static ImprovedFireComponent? GetFire(Panel_FeedFire panel)
+            public static FireOverhaulComponent? GetFire(Panel_FeedFire panel)
             {
                 if (panel.m_FireplaceInteraction == null || panel.m_FireplaceInteraction.Fire == null) return null;
-                ImprovedFireComponent iFire = panel.m_FireplaceInteraction.Fire.GetComponent<ImprovedFireComponent>();
+                FireOverhaulComponent iFire = panel.m_FireplaceInteraction.Fire.GetComponent<FireOverhaulComponent>();
                 return iFire == null ? null : iFire;
             }
         }
@@ -150,7 +150,7 @@ namespace ImprovedFires.Patches
 				(__instance.m_Sprite_FireFill as UIBasicSprite).fillAmount = fill;
 
                 Panel_FeedFire_AddSlider.airflowRow?.Refresh();
-                ImprovedFireComponent? fire = Panel_FeedFire_AddSlider.GetFire(__instance);
+                FireOverhaulComponent? fire = Panel_FeedFire_AddSlider.GetFire(__instance);
                 SliderRow? row = Panel_FeedFire_AddSlider.airflowRow;
                 if (fire != null && row != null && row.Name != null) row.Name.text = fire.GetAirflowLabel();
 
@@ -160,11 +160,11 @@ namespace ImprovedFires.Patches
 
             private static void SetFireFillAmount(Panel_FeedFire __instance)
             {
-                ImprovedFireComponent iFire = __instance.m_FireplaceInteraction.Fire.gameObject.GetComponent<ImprovedFireComponent>();
+                FireOverhaulComponent iFire = __instance.m_FireplaceInteraction.Fire.gameObject.GetComponent<FireOverhaulComponent>();
 
                 if (iFire == null)
                 {
-                    Main.Logger.Log("ImprovedFireComponent is null, cannot get fire fill amount", ComplexLogger.FlaggedLoggingLevel.Error);
+                    Main.Logger.Log("FireOverhaulComponent is null, cannot get fire fill amount", ComplexLogger.FlaggedLoggingLevel.Error);
                     return;
                 }
 
@@ -199,7 +199,7 @@ namespace ImprovedFires.Patches
 
             private static UILabel? caption;
 
-            public static void Update(Panel_FeedFire panel, ImprovedFireComponent? fire)
+            public static void Update(Panel_FeedFire panel, FireOverhaulComponent? fire)
             {
                 if (fire == null || panel.m_Label_FireTemperature == null) return;
 
@@ -241,7 +241,7 @@ namespace ImprovedFires.Patches
                 if (button == null) Build(panel);
                 if (button == null) return;
 
-                ImprovedFireComponent? fire = Panel_FeedFire_AddSlider.GetFire(panel);
+                FireOverhaulComponent? fire = Panel_FeedFire_AddSlider.GetFire(panel);
                 bool show = fire != null && fire.fireSim.HasRemovableFuel();
                 if (button.activeSelf != show) button.SetActive(show);
             }
@@ -252,7 +252,7 @@ namespace ImprovedFires.Patches
 
                 if (template == null || FindClickable(template.gameObject) == null) return;
 
-                GameObject holder = new GameObject("ImprovedFires Button Holder");
+                GameObject holder = new GameObject("FireOverhaul Button Holder");
                 holder.SetActive(false);
 
                 GameObject copy = UnityEngine.Object.Instantiate(template.gameObject, holder.transform, false);
@@ -333,7 +333,7 @@ namespace ImprovedFires.Patches
             public static void Postfix(Panel_FeedFire __instance)
             {
                 
-                ImprovedFireComponent iFire = __instance.m_FireplaceInteraction.Fire.gameObject.GetComponent<ImprovedFireComponent>();
+                FireOverhaulComponent iFire = __instance.m_FireplaceInteraction.Fire.gameObject.GetComponent<FireOverhaulComponent>();
 
                 float num = iFire.GetDurationEstimate() / 60f;
 
@@ -364,7 +364,7 @@ namespace ImprovedFires.Patches
             private static void Postfix(Panel_FeedFire __instance)
             {
                 
-                ImprovedFireComponent iFire = __instance.m_FireplaceInteraction.Fire.gameObject.GetComponent<ImprovedFireComponent>();
+                FireOverhaulComponent iFire = __instance.m_FireplaceInteraction.Fire.gameObject.GetComponent<FireOverhaulComponent>();
 
                 if(iFire == null) return;
 
@@ -382,7 +382,7 @@ namespace ImprovedFires.Patches
 
             private static void Postfix(Panel_FireStart __instance)
             {
-                ImprovedFireComponent iFire = __instance.m_FireplaceInteraction.Fire.gameObject.GetComponent<ImprovedFireComponent>();
+                FireOverhaulComponent iFire = __instance.m_FireplaceInteraction.Fire.gameObject.GetComponent<FireOverhaulComponent>();
 
                 if(iFire == null) return;
 
@@ -402,7 +402,7 @@ namespace ImprovedFires.Patches
                 if (success)
                 {
                     
-                    ImprovedFireComponent iFire = __instance.m_FireplaceInteractedWith.gameObject.GetComponent<ImprovedFireComponent>();
+                    FireOverhaulComponent iFire = __instance.m_FireplaceInteractedWith.gameObject.GetComponent<FireOverhaulComponent>();
 
                     if(iFire == null) return;
                     iFire.RemoveUnburntFuel();

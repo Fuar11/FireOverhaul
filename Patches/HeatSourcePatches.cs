@@ -1,6 +1,6 @@
 ﻿using HarmonyLib;
 using Il2Cpp;
-using ImprovedFires.Component;
+using FireOverhaul.Component;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine.Rendering.RenderGraphModule.NativeRenderPassCompiler;
 
-namespace ImprovedFires.Patches
+namespace FireOverhaul.Patches
 {
     internal class HeatSourcePatches
     {
@@ -21,7 +21,7 @@ namespace ImprovedFires.Patches
             public static bool Prefix(HeatSource __instance)
             {
 
-                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+                FireOverhaulComponent iFire = __instance.gameObject.GetComponent<FireOverhaulComponent>(); //for now, might use GUID later
 
                 if (iFire == null)
                 {
@@ -47,7 +47,7 @@ namespace ImprovedFires.Patches
         {
             public static bool Prefix(HeatSource __instance)
             {
-                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+                FireOverhaulComponent iFire = __instance.gameObject.GetComponent<FireOverhaulComponent>(); //for now, might use GUID later
 
                 if (iFire == null)
                 {

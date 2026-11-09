@@ -1,4 +1,4 @@
-namespace ImprovedFires.Utilities
+namespace FireOverhaul.Utilities
 {
     /// <summary>
     /// Wraps a cloned options-menu slider (Panel_OptionsMenu.m_FieldOfViewSlider).
