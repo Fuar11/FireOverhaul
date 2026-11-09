@@ -287,6 +287,7 @@ namespace ImprovedFires.Patches
                     iFire.fireSim.AddFuelItem(fuelItem);
                     iFire.fireSim.state = Enums.FireState.Dwindling; 
                     iFire.fireSim.airflowControl = 1f;
+                    iFire.fireSim.charcoalAmount = 0f;
 
                     iFire.RefreshDurationEstimate();
                 }
@@ -366,7 +367,7 @@ namespace ImprovedFires.Patches
                 }
 
                 //charcoal
-                __instance.m_NumGeneratedCharcoalPieces = iFire.fireSim.GetCharcoal(); 
+                __instance.m_NumGeneratedCharcoalPieces = iFire.fireSim.GetCharcoal();
                 __instance.FireStateSet(Il2Cpp.FireState.Off);
             }
 

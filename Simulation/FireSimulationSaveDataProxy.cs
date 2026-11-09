@@ -12,6 +12,7 @@ namespace ImprovedFires.Simulation
         public float forgeTemperature { get; set; }
         public float airflowControl { get; set; } = 1f;
 
+        public float charcoalAmount {get; set;}
         public float timeAtSave {get; set;}
 
         public List<FireFuelItemSaveDataProxy> fuelPool { get; set; } = new List<FireFuelItemSaveDataProxy>();

@@ -32,6 +32,10 @@ namespace ImprovedFires.Simulation
         public float innerRadius;
         public float outerRadius;
 
+        //charcoal
+
+        public float charcoalAmount;
+
         //wind
         public bool windAffected;
 
@@ -146,6 +150,7 @@ namespace ImprovedFires.Simulation
                 corePower += weightedAmount - fuel.heatDrainPower;
                 totalRadiantPower += fuel.GetRadiantPower();
 
+
                 if (fuel.type == FuelType.Coal) totalCoalFuelPower += fuel.currentPowerOutput;
 
                 switch (fuel.state)
@@ -165,6 +170,9 @@ namespace ImprovedFires.Simulation
                     case Enums.FireFuelItemState.Heating:
                     case Enums.FireFuelItemState.Cold:
                         unlitFuelCount++;
+                        break;
+                    case Enums.FireFuelItemState.Ash:
+                        charcoalAmount += fuel.GetCharcoalProduced();
                         break;
                 }
             }
@@ -452,14 +460,14 @@ namespace ImprovedFires.Simulation
         public int GetCharcoal()
         {
 
-            float charcoalAmount = 0f;
+            float charcoal = charcoalAmount;
 
             foreach (FireFuelItem fuel in fuelPool)
             {
-                charcoalAmount += fuel.GetCharcoalProduced();
+                charcoal += fuel.GetCharcoalProduced();
             }
 
-            return Mathf.CeilToInt(charcoalAmount / 0.1f);
+            return Mathf.CeilToInt(charcoal / 0.1f);
 
         }
 
@@ -550,6 +558,7 @@ namespace ImprovedFires.Simulation
             sdp.forgeTemperature = forgeTemperature;
             sdp.totalFireTemperature = totalFireTemperature;
             sdp.totalRadiantTemperature = totalRadiantTemperature;
+            sdp.charcoalAmount = charcoalAmount;
             sdp.timeAtSave = GameManager.GetTimeOfDayComponent().GetHoursPlayedNotPaused();
 
             sdp.state = state;
@@ -605,6 +614,7 @@ namespace ImprovedFires.Simulation
             forgeTemperature = ldp.forgeTemperature;
             cookingSlotTemperature = ldp.cookingSlotTemperature;
             airflowControl = ldp.airflowControl;
+            charcoalAmount = ldp.charcoalAmount;
 
             timeAtLastSave = ldp.timeAtSave;
             checkTimePass = true;
