@@ -45,15 +45,16 @@ namespace ImprovedFires.Patches
             public static bool Prefix(Fire __instance)
             {
                 
-                if(__instance.gameObject.name.ToLowerInvariant().Contains("invisiblefire")) return true;
+                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>();
+
+                if(iFire == null) return true;
                 else return false;
 
             }
             public static void Postfix(Fire __instance)
             {
 
-                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
-
+                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); 
                 if (GameManager.m_IsPaused || GameManager.s_IsGameplaySuspended || iFire == null)
                 {
                     return;
@@ -192,35 +193,23 @@ namespace ImprovedFires.Patches
         public class AddFuelToPool
         {
 
-            public static bool Prefix(Fire __instance)
+            public static bool Prefix(Fire __instance, ref GearItem fuel)
             {
                 ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
 
                 if(iFire == null) return true;
-                else return false;
-            }
-
-            public static void Postfix(Fire __instance, ref GearItem fuel)
-            {
-
-                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
-
-                if(iFire == null) return;
 
                 FireFuelItem fuelItem = Utilities.FuelItems.GetFuelItemInstance(fuel.name);
 
                 if(fuelItem == null)
                 {
                     Main.Logger.Log("Unknown fuel item detected.", ComplexLogger.FlaggedLoggingLevel.Error);
-                    return;
+                    return false;
                 }
 
                 iFire.fireSim.AddFuelItem(fuelItem);
 
                 __instance.m_HeatSource.m_TempIncrease = iFire.fireSim.totalRadiantTemperature;
-                //__instance.m_FuelHeatIncrease = iFire.totalExternalFireTemperature;
-                __instance.m_HeatSource.m_MaxTempIncreaseInnerRadius = iFire.fireSim.innerRadius; 
-                __instance.m_HeatSource.m_MaxTempIncreaseOuterRadius = iFire.fireSim.outerRadius;
 
                 if (fuelItem.type == FuelType.Wood || fuelItem.type == FuelType.Synthetic)
                 {
@@ -228,6 +217,8 @@ namespace ImprovedFires.Patches
                 }
 
                 iFire.RefreshDurationEstimate();
+
+                return false;
             }
         }
 
@@ -309,32 +300,21 @@ namespace ImprovedFires.Patches
             public static bool Prefix(Fire __instance)
             {
                 
-                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
-
-                if(iFire == null) return true;
-                else return false;
-            }
-
-            public static void Postfix(Fire __instance, ref FuelSourceItem fuel)
-            {
-
                 ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); 
 
-                if(iFire == null) return;                
+                if(iFire == null) return true;                
                 
                 __instance.m_HeatSource.TurnOn();
                 __instance.m_HeatSource.m_MaxTempIncrease = iFire.fireSim.totalRadiantTemperature;
                 __instance.m_FuelHeatIncrease = iFire.fireSim.totalRadiantTemperature;
-                __instance.m_HeatSource.m_MaxTempIncreaseInnerRadius = iFire.fireSim.innerRadius;
-                __instance.m_HeatSource.m_MaxTempIncreaseOuterRadius = iFire.fireSim.outerRadius * __instance.GetFireOuterRadiusScale(); 
 
                 __instance.m_FX.TriggerStage(Il2Cpp.FireState.Starting_TinderSmallFlame, true, true);
 
                 __instance.m_ElapsedOnTODSeconds = 0f;
                 __instance.m_ElapsedOnTODSecondsUnmodified = 0f;
 
+                return false;
             }
-
         }
 
         [HarmonyPatch(typeof(Fire), nameof(Fire.TurnOff))]
@@ -348,16 +328,6 @@ namespace ImprovedFires.Patches
                 ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
 
                 if(iFire == null) return true;
-                else return false;
-
-            }
-
-            public static void Postfix(Fire __instance)
-            {
-
-                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
-
-                if(iFire == null) return;
 
                 __instance.StopFireLoop();
                 __instance.m_HeatSource.TurnOff(); //maybe for now
@@ -369,8 +339,9 @@ namespace ImprovedFires.Patches
                 //charcoal
                 __instance.m_NumGeneratedCharcoalPieces = iFire.fireSim.GetCharcoal();
                 __instance.FireStateSet(Il2Cpp.FireState.Off);
-            }
 
+                return false;
+            }
         }
 
         [HarmonyPatch(typeof(Fire), nameof(Fire.FireShouldBlowOutFromWind))]
@@ -427,23 +398,17 @@ namespace ImprovedFires.Patches
         public class TakeTorchLogic
         {
 
-            public static bool Prefix(Fire __instance)
+            public static bool Prefix(Fire __instance, ref bool __result)
             {
                 
-                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+              ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
 
                 if(iFire == null) return true;
-                else return false;
-
-            }
-
-            public static void Postfix(Fire __instance, ref bool __result)
-            {
-                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
-
-                if(iFire == null) return;
 
                 __result = iFire.fireSim.CanTakeTorch();
+
+                return false;
+
             }
         }
 
@@ -517,23 +482,13 @@ namespace ImprovedFires.Patches
         internal class AddForgeTemperatureHoverText
         {
             
-            public static bool Prefix(Forge __instance)
+            public static bool Prefix(Forge __instance, ref BaseInteraction baseInteraction)
             {
                 
-                 Fire fire = __instance.m_Fire;
-                if(fire == null) return true;
+                Fire fire = __instance.m_Fire;
+                if(fire == null) return false;
                 ImprovedFireComponent iFire = fire.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
                 if(iFire == null) return true;
-
-                return false;
-            }
-            public static void Postfix(Forge __instance, ref BaseInteraction baseInteraction)
-            {
-                
-                 Fire fire = __instance.m_Fire;
-                if(fire == null) return;
-                ImprovedFireComponent iFire = fire.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
-                if(iFire == null) return;
 
                 baseInteraction.HoverText = Localization.Get(baseInteraction.m_DefaultHoverText.m_LocalizationID);
 
@@ -543,8 +498,8 @@ namespace ImprovedFires.Patches
                     baseInteraction.HoverText = baseInteraction.HoverText + "\n" + heat;
                 }
 
+                return false;
             }
-
         }
 
         [HarmonyPatch(typeof(Forge), nameof(Forge.DisplayNotHotEnoughMessage))]

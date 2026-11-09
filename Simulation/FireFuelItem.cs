@@ -170,7 +170,7 @@ namespace ImprovedFires.Simulation
         }
 
     
-        public void UpdateStats(FireSimulation fireSim, bool extinguish, float gameDeltaTime)
+        public void UpdateStats(FireSimulation fireSim, float gameDeltaTime)
         {
 
             float ignitionRangePosition = Mathf.InverseLerp(minIgnitionTemp, ignitionTemp, fireSim.totalFireTemperature);
@@ -198,7 +198,7 @@ namespace ImprovedFires.Simulation
             else if (state == FireFuelItemState.Heating)
             {
 
-                if (fireSim.totalFireTemperature < minIgnitionTemp || extinguish) state = FireFuelItemState.Cold;
+                if (fireSim.totalFireTemperature < minIgnitionTemp) state = FireFuelItemState.Cold;
 
                 float excessTemp = fireSim.totalFireTemperature - ignitionTemp;
 
@@ -237,13 +237,6 @@ namespace ImprovedFires.Simulation
             }
             else if(state == FireFuelItemState.Embers)
             {
-
-                if (extinguish)
-                {
-                    ReduceToAsh();
-                    return;
-                }
-
                 currentPowerOutput = emberPowerOutput * CalculateEmberCurve() * fireSim.burnRateMult;
                 currentPowerOutput *= Mathf.Pow(fireSim.airflow, AIRFLOW_EXP_EMBERS);
                 //Main.Logger.Log($"Fuel {name} embers power output is {currentPowerOutput}", ComplexLogger.FlaggedLoggingLevel.Debug);

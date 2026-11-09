@@ -139,7 +139,7 @@ namespace ImprovedFires.Simulation
                 float energyBefore = fuel.remainingEnergy;
                 bool burningBefore = fuel.state == FireFuelItemState.Burning;
 
-                fuel.UpdateStats(this, false, dt);
+                fuel.UpdateStats(this, dt);
                 
                 if(burningBefore) flamingEnergyDifference += energyBefore - fuel.remainingEnergy;
 

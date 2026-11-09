@@ -22,31 +22,22 @@ namespace ImprovedFires.Patches
             {
 
                 ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
-                if (iFire == null)
-                {
-                    return true;
-                }
-                else return false;
-
-            }
-
-            public static void Postfix(HeatSource __instance)
-            {
-                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
 
                 if (iFire == null)
                 {
                     //Main.Logger.Log("iFire is null when trying to add heat source.", ComplexLogger.FlaggedLoggingLevel.Error);
-                    return;
+                    return true;
                 }
 
                 GameManager.GetHeatSourceManagerComponent().AddHeatSource(__instance);
 
                 __instance.m_MaxTempIncrease = iFire.fireSim.totalRadiantTemperature; //this one might not matter
                 __instance.m_TempIncrease = iFire.fireSim.totalRadiantTemperature; //the current temp
-                __instance.m_StartingTemp = iFire.fireSim.totalRadiantTemperature; 
+                __instance.m_StartingTemp = iFire.fireSim.totalRadiantTemperature;
 
                 __instance.m_TurnedOn = true;
+
+                return false;
             }
         }
 
@@ -56,24 +47,11 @@ namespace ImprovedFires.Patches
         {
             public static bool Prefix(HeatSource __instance)
             {
-
                 ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+
                 if (iFire == null)
                 {
                     return true;
-                }
-                else return false;
-
-            }
-
-              public static void Postfix(HeatSource __instance)
-            {
-
-                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
-
-                if (iFire == null)
-                {
-                    return;
                 }
                 else
                 {
@@ -82,6 +60,7 @@ namespace ImprovedFires.Patches
                     __instance.m_MaxTempIncreaseInnerRadius = iFire.fireSim.innerRadius;
                 }
 
+                return false;
             }
         }
     }
