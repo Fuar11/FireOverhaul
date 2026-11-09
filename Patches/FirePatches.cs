@@ -536,7 +536,7 @@ namespace ImprovedFires.Patches
 
                 if (iFire.fireSim.forgeTemperature > 0f)
                 {
-                    string heat = Utils.GetHeatIncreaseText(iFire.fireSim.forgeTemperature, true, __instance.m_Fire);
+                    string heat = Utils.GetHeatIncreaseText(iFire.fireSim.forgeTemperature, false, __instance.m_Fire);
                     baseInteraction.HoverText = baseInteraction.HoverText + "\n" + heat;
                 }
 

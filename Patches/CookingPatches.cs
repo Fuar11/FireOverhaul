@@ -97,7 +97,7 @@ namespace ImprovedFires.Patches
                 ImprovedFireComponent iFire = __instance.m_FireBeingUsed.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
                 if(iFire == null) return;
 
-                __result += " - " + Utils.GetHeatIncreaseText(iFire.fireSim.cookingSlotTemperature, true, __instance.m_FireBeingUsed);
+                __result += " - " + Utils.GetHeatIncreaseText(iFire.fireSim.cookingSlotTemperature, false, __instance.m_FireBeingUsed);
             }
 
         }

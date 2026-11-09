@@ -6,7 +6,7 @@ namespace ImprovedFires
     {
 
 
-        public static string GetHeatIncreaseText(float heatIncrease, bool includeUnits, Fire fire)
+        public static string GetHeatIncreaseText(float heatIncrease, bool isRadiant, Fire fire)
         {
 
             string text = "";
@@ -14,14 +14,16 @@ namespace ImprovedFires
             if (GetUserMetric() == 2)
             {
                 heatIncrease *= 1.8f;
+                if(!isRadiant) heatIncrease += 32f;
                 text2 = Localization.Get("GAMEPLAY_DegreesFUnits");
             }
             heatIncrease = fire.RoundOutput(heatIncrease);
+            string symbol = heatIncrease < 0 ? "" : "+";
             if (Il2Cpp.Utils.IsZero(heatIncrease))
             {
                 return text + "+0" + text2;
             }
-            return text + "+" + heatIncrease + text2;
+            return text + symbol + heatIncrease + text2;
         }
 
         public static int GetUserMetric()

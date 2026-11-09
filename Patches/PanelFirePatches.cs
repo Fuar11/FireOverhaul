@@ -203,7 +203,7 @@ namespace ImprovedFires.Patches
             {
                 if (fire == null || panel.m_Label_FireTemperature == null) return;
 
-                panel.m_Label_FireTemperature.text = Utils.GetHeatIncreaseText(fire.fireSim.totalFireTemperature, true, panel.m_FireplaceInteraction.Fire);
+                panel.m_Label_FireTemperature.text = Utils.GetHeatIncreaseText(fire.fireSim.totalFireTemperature, false, panel.m_FireplaceInteraction.Fire);
 
                 if (caption == null) RenameCaption(panel.m_Label_FireTemperature);
             }

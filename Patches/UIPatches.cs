@@ -60,7 +60,7 @@ namespace ImprovedFires.Patches
 
                     values[6] = " - ";
 
-                    values[7] = Utils.GetHeatIncreaseText(iFire.fireSim.totalFireTemperature, true, fire);
+                    values[7] = Utils.GetHeatIncreaseText(iFire.fireSim.totalFireTemperature, false, fire);
 
                     extraText = string.Concat(values);
                     
