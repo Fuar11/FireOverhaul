@@ -281,10 +281,12 @@ namespace ImprovedFires.Patches
                         return;
                     }
 
+
                     fuelItem.state = FireFuelItemState.Burning;
 
                     iFire.fireSim.AddFuelItem(fuelItem);
                     iFire.fireSim.state = Enums.FireState.Dwindling; 
+                    iFire.fireSim.airflowControl = 1f;
 
                     iFire.RefreshDurationEstimate();
                 }
@@ -388,7 +390,7 @@ namespace ImprovedFires.Patches
             public static void Postfix(Fire __instance)
             {
                 
-                 ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
+                ImprovedFireComponent iFire = __instance.gameObject.GetComponent<ImprovedFireComponent>(); //for now, might use GUID later
 
                 if(iFire == null) return;
 

@@ -256,7 +256,11 @@ namespace ImprovedFires.Simulation
                 return FireState.Dwindling;
 
             if (coalsPower >= COALS_ENTER_EXIT)
+            {
                 return FireState.Coals;
+            }
+
+            if(flamePower > 0) return FireState.Dwindling;
 
             if (coalsPower + emberPower > 0f)
                 return FireState.Embers;
