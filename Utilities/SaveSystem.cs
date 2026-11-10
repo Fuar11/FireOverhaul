@@ -78,11 +78,11 @@ namespace FireOverhaul.Utilities
 
                 if (slot != null)
                 {
-                   Main.Logger.Log("[CustomSaves] Keys save have:", ComplexLogger.FlaggedLoggingLevel.Debug);
+                   //Main.Logger.Log("[CustomSaves] Keys save have:", ComplexLogger.FlaggedLoggingLevel.Debug);
                     Il2CppSystem.Collections.Generic.List<string> Keys = slot.GetAllDataKeys();
                     foreach (string key in Keys)
                     {
-                        Main.Logger.Log(key, ComplexLogger.FlaggedLoggingLevel.Debug);
+                        //Main.Logger.Log(key, ComplexLogger.FlaggedLoggingLevel.Debug);
                     }
 
                     m_SavedFires.Clear();

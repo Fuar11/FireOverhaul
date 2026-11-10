@@ -27,7 +27,6 @@ namespace FireOverhaul.Patches
 
                     if(__instance.gameObject.name.ToLowerInvariant().Contains("invisiblefire")) return;
 
-                    Main.Logger.Log("Adding fire component to fire object, wahoo!", ComplexLogger.FlaggedLoggingLevel.Debug);
                     FireOverhaulComponent iFire = __instance.gameObject.AddComponent<FireOverhaulComponent>();
                 }
 
@@ -233,7 +232,6 @@ namespace FireOverhaul.Patches
 
                 if(iFire == null) return;
 
-                Main.Logger.Log("Fire is starting!", ComplexLogger.FlaggedLoggingLevel.Debug);
                 iFire.fireSim.state = Enums.FireState.Starting;
             }
 
@@ -251,7 +249,7 @@ namespace FireOverhaul.Patches
 
                 if(iFire == null) return;
 
-                Main.Logger.Log($"Exit fire starting, fire success is {success}", ComplexLogger.FlaggedLoggingLevel.Debug);
+                //Main.Logger.Log($"Exit fire starting, fire success is {success}", ComplexLogger.FlaggedLoggingLevel.Debug);
 
                 if (success)
                 {
