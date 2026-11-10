@@ -84,11 +84,13 @@ The fire's overall state is displayed on the HUD when you look at a fire. It dep
 ## Temperature
 
 - **Core temperature** is how hot the fire itself is and it is determined by the energy output of all combusting fuel. It decides what fuel can catch and how quickly fuel burns. The hotter a fire, the faster the fuel burns, the colder the fire, the slower it burns. This temperature decides all.
+- The core temperature of the fire can reach a max of around 1100 degrees celsius on wood alone. Adding coal can increase that max to over 1300 degrees celsius.
 
 - **Heat output** is the radiant output heat (radiant and convective, technically), it's the heat that you feel nearby. The heat that changes the air temperature. It rises and falls more slowly than the core, and it reaches further on a strong fire.
 
-- The core temperature of the fire can reach a max of around 1100 degrees celsius on wood alone. Adding coal can increase that max to over 1300 degrees celsius.
-
+- **Heat Radius:** The heat radius of any given fire has been changed significantly. The output heat is felt at it's hottest right up against the fire and drops off quickly as you walk away. 
+If you are using the Dynamic Temperature mod and you are indoors, the room will gradually warm to meet the air temperature at the fire (and any other heat sources present).
+ 
 ## Estimated Duration
 
 - Because a hotter fire burns fuel faster and a colder fire burns fuel slower, the duration of any given fire is not fixed. The estimated duration is calculated using an advanced simulation feature that fast forwards the simulation at a given moment to calculate when it will reduce to embers. 
