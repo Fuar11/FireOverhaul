@@ -226,7 +226,18 @@ namespace FireOverhaul.Simulation
                     state = FireFuelItemState.Cold;
                 }
 
-                if (burnAmount >= coalsThreshold) state = FireFuelItemState.Coals;
+                if (burnAmount >= coalsThreshold)
+                { 
+                    if(type == FuelType.Paper || type == FuelType.Organic || type == FuelType.Cloth)
+                    {
+                        ReduceToAsh();
+                    }
+                    else
+                    {
+                        state = FireFuelItemState.Coals;
+                    }
+                }
+            
             }
             else if(state == FireFuelItemState.Coals)
             {

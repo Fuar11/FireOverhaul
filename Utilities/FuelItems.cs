@@ -25,11 +25,11 @@ namespace FireOverhaul.Utilities
             if (name.ToLowerInvariant().Contains("firelog")) return new FireFuelItem(name, "Firelog", FuelType.Synthetic, 3f, 350, 5500f, 36_000_000f, 0.75f, 0.95f, 0.1f, 2f);
 
            //tinder/kindling
-            if( name.ToLowerInvariant().Contains("gear_tinder") || name.ToLowerInvariant().Contains("bark")) return new FireFuelItem(name, "Wood Tinder", FuelType.Paper, 0.5f, 50, 1500f, 1_000_00f, 0.99f, 0.99f, 0f, 0.05f);
-            if (name.ToLowerInvariant().Contains("newsprint") || name.ToLowerInvariant().Contains("paperstack") || name.ToLowerInvariant().Contains("cash")) return new FireFuelItem(name, "Paper Tinder", FuelType.Paper, 0.3f, 50, 2000f, 950_00f, 0.99f, 0.99f, 0f, 0.1f);
-            if (name.ToLowerInvariant().Contains("cattail")) return new FireFuelItem(name, "Cattail Head", FuelType.Paper, 0.05f, 15, 1500f, 350_00f, 0.99f, 0.99f, 0f, 0.05f);
+            if( name.ToLowerInvariant().Contains("gear_tinder") || name.ToLowerInvariant().Contains("bark")) return new FireFuelItem(name, "Wood Tinder", FuelType.Paper, 0.5f, 50, 1500f, 1_000_00f, 0.7f, 0.99f, 0f, 0.05f);
+            if (name.ToLowerInvariant().Contains("newsprint") || name.ToLowerInvariant().Contains("paperstack") || name.ToLowerInvariant().Contains("cash")) return new FireFuelItem(name, "Paper Tinder", FuelType.Paper, 0.3f, 50, 2000f, 950_00f, 0.7f, 0.99f, 0f, 0.1f);
+            if (name.ToLowerInvariant().Contains("cattail")) return new FireFuelItem(name, "Cattail Head", FuelType.Paper, 0.05f, 15, 1500f, 350_00f, 0.7f, 0.99f, 0f, 0.05f);
 ;           if(name.ToLowerInvariant().Contains("cloth")) return new FireFuelItem(name, "Cloth Piece", FuelType.Cloth, 1f, 80, 1200f, 1_050_00f, 0.99f, 0.99f, 0f, 0.1f);
-;           if(name.ToLowerInvariant().Contains("beard")) return new FireFuelItem(name, "Lichen", FuelType.Organic, 0.2f, 50, 1200f, 1_065_00f, 0.99f, 0.99f, 0f, 0.01f);
+;           if(name.ToLowerInvariant().Contains("beard")) return new FireFuelItem(name, "Lichen", FuelType.Organic, 0.2f, 50, 1200f, 1_065_00f, 0.7f, 0.99f, 0f, 0.01f);
 
             return null;
 
